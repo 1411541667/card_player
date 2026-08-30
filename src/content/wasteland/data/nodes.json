@@ -1,0 +1,15 @@
+[
+  { "id": "node.combat-1", "handlerId": "core.combat", "floors": [1], "encounterPool": ["encounter.floor-1"] },
+  { "id": "node.elite-1", "handlerId": "core.elite", "floors": [1, 2, 3], "encounterPool": ["encounter.elite-1"] },
+  { "id": "node.combat-2", "handlerId": "core.combat", "floors": [2], "encounterPool": ["encounter.floor-2"] },
+  { "id": "node.combat-3", "handlerId": "core.combat", "floors": [3], "encounterPool": ["encounter.floor-3"] },
+  { "id": "node.combat-4", "handlerId": "core.combat", "floors": [4], "encounterPool": ["encounter.floor-4"] },
+  { "id": "node.shop", "handlerId": "core.shop" },
+  { "id": "node.event", "handlerId": "core.event", "floors": [1, 2, 3], "eventPool": ["event.rising-sand", "event.warm-fire", "event.sand-blind", "event.hunger-spreads"] },
+  { "id": "node.event-truth", "handlerId": "core.event", "floors": [4], "eventPool": ["event.piece-truth"] },
+  { "id": "node.reward", "handlerId": "core.reward", "rewardPool": ["reward.scrap-150", "reward.heal-30", "reward.gauze", "reward.can"] },
+  { "id": "node.boss-1", "handlerId": "core.boss", "floors": [1], "encounterPool": ["encounter.boss-1"] },
+  { "id": "node.boss-2", "handlerId": "core.boss", "floors": [2], "encounterPool": ["encounter.boss-2"] },
+  { "id": "node.boss-3", "handlerId": "core.boss", "floors": [3], "encounterPool": ["encounter.boss-3"] },
+  { "id": "node.boss-4", "handlerId": "core.boss", "floors": [4], "encounterPool": ["encounter.boss-4"] }
+]

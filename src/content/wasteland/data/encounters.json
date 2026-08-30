@@ -1,0 +1,12 @@
+[
+  { "id": "encounter.floor-1", "level": 1, "category": "normal", "enemyIds": ["enemy.dirty-dog", "enemy.sick-dog", "enemy.wanderer", "enemy.dried-person", "enemy.meat-mass", "enemy.sand-worm"] },
+  { "id": "encounter.floor-2", "level": 2, "category": "normal", "enemyIds": ["enemy.rotten-person"] },
+  { "id": "encounter.floor-3", "level": 3, "category": "normal", "enemyIds": ["enemy.armed-guard"] },
+  { "id": "encounter.floor-4", "level": 4, "category": "normal", "enemyIds": ["enemy.strange-statue"] },
+  { "id": "encounter.sand-messenger", "level": 3, "category": "special", "enemyIds": ["enemy.sand-messenger"] },
+  { "id": "encounter.elite-1", "level": 1, "category": "elite", "enemyIds": ["enemy.elite-barking-dog", "enemy.elite-sand-worm", "enemy.elite-hungry-person"] },
+  { "id": "encounter.boss-1", "level": 1, "category": "boss", "enemyIds": ["boss.hunger-mass"], "rewardPool": ["reward.scrap-150", "reward.heal-30", "reward.gauze", "reward.can", "reward.card-smash", "reward.card-dodge"] },
+  { "id": "encounter.boss-2", "level": 2, "category": "boss", "enemyIds": ["boss.truth-seer"], "rewardPool": ["reward.scrap-150", "reward.heal-30", "reward.gauze", "reward.can", "reward.card-call", "reward.card-anger"] },
+  { "id": "encounter.boss-3", "level": 3, "category": "boss", "enemyIds": ["boss.terror-violence"], "rewardPool": ["reward.scrap-150", "reward.heal-30", "reward.gauze", "reward.can", "reward.card-smash", "reward.card-anger"] },
+  { "id": "encounter.boss-4", "level": 4, "category": "boss", "enemyIds": ["boss.angel-question"], "rewardPool": ["reward.scrap-150", "reward.heal-30", "reward.gauze", "reward.can", "reward.card-call", "reward.card-anger"] }
+]

@@ -1,0 +1,61 @@
+[
+  {
+    "id": "collectible.gauze",
+    "nameKey": "collectible.gauze.name",
+    "descriptionKey": "collectible.gauze.description",
+    "kind": "positive",
+    "rarity": "purple",
+    "triggers": [{ "hook": "combatEnd", "effects": [{ "effectId": "core.healPercent", "params": { "percent": 0.1 } }] }]
+  },
+  {
+    "id": "collectible.scavenger-bag",
+    "nameKey": "collectible.scavenger-bag.name",
+    "descriptionKey": "collectible.scavenger-bag.description",
+    "kind": "positive",
+    "rarity": "blue",
+    "triggers": [{ "hook": "afterCardPlayed", "cardTag": "attack", "effects": [{ "effectId": "core.heal", "params": { "amount": 4 } }] }]
+  },
+  {
+    "id": "collectible.can",
+    "nameKey": "collectible.can.name",
+    "descriptionKey": "collectible.can.description",
+    "kind": "positive",
+    "rarity": "blue",
+    "onAcquire": [{ "effectId": "core.upgradeRandomCards", "params": { "cardTag": "defense", "count": 2 } }]
+  },
+  {
+    "id": "collectible.sand-light",
+    "nameKey": "collectible.sand-light.name",
+    "descriptionKey": "collectible.sand-light.description",
+    "kind": "positive",
+    "rarity": "purple",
+    "triggers": [{ "hook": "afterCardDrawn", "every": 10, "effects": [{ "effectId": "core.gainResource", "params": { "resourceId": "action", "amount": 1 } }] }]
+  },
+  {
+    "id": "collectible.greedy-coin",
+    "nameKey": "collectible.greedy-coin.name",
+    "descriptionKey": "collectible.greedy-coin.description",
+    "kind": "positive",
+    "rarity": "gold",
+    "triggers": [{ "hook": "combatEnd", "effects": [{ "effectId": "core.multiplyGoldRandom", "params": { "upMultiplier": 1.2, "downMultiplier": 0.8, "upChance": 0.65 } }] }]
+  },
+  {
+    "id": "collectible.blood-letter",
+    "nameKey": "collectible.blood-letter.name",
+    "descriptionKey": "collectible.blood-letter.description",
+    "kind": "story",
+    "rarity": "purple"
+  },
+  {
+    "id": "collectible.glow-stick", "nameKey": "collectible.glow-stick.name", "descriptionKey": "collectible.glow-stick.description", "kind": "positive", "rarity": "blue",
+    "triggers": [{ "hook": "combatStart", "effects": [{ "effectId": "core.addStatus", "params": { "statusId": "status.sharp", "stacks": 1 } }] }]
+  },
+  {
+    "id": "collectible.brick", "nameKey": "collectible.brick.name", "descriptionKey": "collectible.brick.description", "kind": "positive", "rarity": "blue",
+    "triggers": [{ "hook": "combatStart", "effects": [{ "effectId": "core.addStatus", "params": { "statusId": "status.strong", "stacks": 1 } }] }]
+  },
+  {
+    "id": "collectible.cooling-patch", "nameKey": "collectible.cooling-patch.name", "descriptionKey": "collectible.cooling-patch.description", "kind": "positive", "rarity": "gold",
+    "triggers": [{ "hook": "combatStart", "effects": [{ "effectId": "core.addStatus", "params": { "statusId": "status.clear", "stacks": 1 } }] }]
+  }
+]

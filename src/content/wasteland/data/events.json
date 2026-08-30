@@ -1,0 +1,40 @@
+[
+  {
+    "id": "event.piece-truth", "titleKey": "event.piece-truth.title", "bodyKey": "event.piece-truth.body",
+    "options": [
+      { "id": "event.piece-truth.reveal", "labelKey": "event.piece-truth.reveal", "goldCost": 999999, "recordsBloodLetterCondition": true, "effects": [] },
+      { "id": "event.piece-truth.dizzy", "labelKey": "event.piece-truth.dizzy", "effects": [] }
+    ]
+  },
+  {
+    "id": "event.rising-sand", "titleKey": "event.rising-sand.title", "bodyKey": "event.rising-sand.body",
+    "options": [
+      { "id": "event.rising-sand.light", "labelKey": "event.rising-sand.light", "guaranteedCollectibleId": "collectible.sand-light", "effects": [] },
+      { "id": "event.rising-sand.pay", "labelKey": "event.rising-sand.pay", "healthCost": 12, "goldCost": 100, "guaranteedCollectibleId": "collectible.blood-letter", "effects": [] },
+      { "id": "event.rising-sand.fight", "labelKey": "event.rising-sand.fight", "encounterId": "encounter.sand-messenger", "guaranteedCollectibleId": "collectible.blood-letter", "effects": [] }
+    ]
+  },
+  {
+    "id": "event.warm-fire", "titleKey": "event.warm-fire.title", "bodyKey": "event.warm-fire.body",
+    "options": [
+      { "id": "event.warm-fire.rest", "labelKey": "event.warm-fire.rest", "effects": [{ "effectId": "core.healPercent", "params": { "percent": 0.5 } }] },
+      { "id": "event.warm-fire.organize", "labelKey": "event.warm-fire.organize", "requiresCardChoice": true, "effects": [] },
+      { "id": "event.warm-fire.ignite", "labelKey": "event.warm-fire.ignite", "requiresCardChoice": true, "transformsCard": true, "effects": [] }
+    ]
+  },
+  {
+    "id": "event.sand-blind", "titleKey": "event.sand-blind.title", "bodyKey": "event.sand-blind.body",
+    "options": [
+      { "id": "event.sand-blind.cross", "labelKey": "event.sand-blind.cross", "healthCost": 12, "effects": [{ "effectId": "core.gainRandomCollectible" }] },
+      { "id": "event.sand-blind.dodge", "labelKey": "event.sand-blind.dodge", "healthCost": 4, "effects": [{ "effectId": "core.upgradeRandomCards", "params": { "cardTag": "any", "count": 1 } }] }
+    ]
+  },
+  {
+    "id": "event.hunger-spreads", "titleKey": "event.hunger-spreads.title", "bodyKey": "event.hunger-spreads.body",
+    "options": [
+      { "id": "event.hunger-spreads.share", "labelKey": "event.hunger-spreads.share", "goldCost": 200, "effects": [{ "effectId": "core.addRunStatus", "params": { "statusId": "status.sharp", "stacks": 1 } }] },
+      { "id": "event.hunger-spreads.drive", "labelKey": "event.hunger-spreads.drive", "healthCost": 20, "effects": [{ "effectId": "core.addRunStatus", "params": { "statusId": "status.strong", "stacks": 1 } }] },
+      { "id": "event.hunger-spreads.ignore", "labelKey": "event.hunger-spreads.ignore", "effects": [] }
+    ]
+  }
+]

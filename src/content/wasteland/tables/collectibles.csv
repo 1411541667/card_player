@@ -1,0 +1,10 @@
+id,名称,种类,稀有度,获取效果,持续效果,备注
+collectible.gauze,纱布,正面,紫,无,战斗结束恢复10%最大生命值,局内收集品
+collectible.scavenger-bag,拾荒者的布袋,正面,蓝,无,每次使用攻击牌恢复4生命,拾荒者初始收集品
+collectible.can,易拉罐,正面,蓝,随机升级两张防护牌,无,一次性获取效果
+collectible.sand-light,沙光,正面,紫,无,战斗中每抽取10张牌获得1行动力,特殊事件收集品
+collectible.greedy-coin,贪婪的金币,正面,金,无,战斗结束时65%概率将代币乘120%否则乘80%并向上取整,开局增益收集品
+collectible.blood-letter,沾染血迹的信,剧情,紫,无,改变第四层首领,隐藏首领暂无
+collectible.glow-stick,荧光棒,正面,蓝,无,战斗开始获得1点敏锐,局内收集品
+collectible.brick,板砖,正面,蓝,无,战斗开始获得1点强劲,局内收集品
+collectible.cooling-patch,清凉贴,正面,金,无,战斗开始获得1点明晰,局内收集品

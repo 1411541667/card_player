@@ -1,0 +1,15 @@
+id,名称,种类,效果
+reward.scrap-150,一袋旧代币,商店代币,获得150商店代币
+reward.heal-30,临时处理,生命恢复,恢复30%最大生命值
+reward.gauze,纱布,收集品,获得纱布
+reward.bag,拾荒者的布袋,收集品,获得拾荒者的布袋
+reward.can,易拉罐,收集品,获得易拉罐
+reward.card-smash,挥砸,卡牌,获得挥砸
+reward.card-dodge,闪躲,卡牌,获得闪躲
+reward.card-call,呼唤队友,卡牌,获得呼唤队友
+reward.card-anger,愤怒,卡牌,获得愤怒
+reward.card-rock,投掷石头,卡牌,获得投掷石头
+reward.card-sand,泼沙,卡牌,获得泼沙
+reward.glow-stick,荧光棒,收集品,获得荧光棒
+reward.brick,板砖,收集品,获得板砖
+reward.cooling-patch,清凉贴,收集品,获得清凉贴

@@ -1,0 +1,613 @@
+[
+  {
+    "id": "enemy.dirty-dog",
+    "nameKey": "enemy.dirty-dog.name",
+    "level": 1,
+    "maxHealth": 22,
+    "mechanismKey": "enemy.dirty-dog.mechanism",
+    "notesKey": "enemy.dirty-dog.notes",
+    "intents": [
+      {
+        "id": "dog.bite",
+        "nameKey": "intent.dog.bite",
+        "target": "enemy",
+        "effects": [
+          {
+            "effectId": "core.damage",
+            "params": {
+              "amount": 5
+            }
+          }
+        ]
+      },
+      {
+        "id": "dog.tear",
+        "nameKey": "intent.dog.tear",
+        "target": "enemy",
+        "effects": [
+          {
+            "effectId": "core.damage",
+            "params": {
+              "amount": 7
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "enemy.sick-dog",
+    "nameKey": "enemy.sick-dog.name",
+    "level": 1,
+    "maxHealth": 24,
+    "mechanismKey": "enemy.sick-dog.mechanism",
+    "notesKey": "enemy.sick-dog.notes",
+    "intents": [
+      {
+        "id": "sick.bite",
+        "nameKey": "intent.sick.bite",
+        "target": "enemy",
+        "effects": [
+          {
+            "effectId": "core.damage",
+            "params": {
+              "amount": 6
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "enemy.wanderer",
+    "nameKey": "enemy.wanderer.name",
+    "level": 1,
+    "maxHealth": 26,
+    "mechanismKey": "enemy.wanderer.mechanism",
+    "notesKey": "enemy.wanderer.notes",
+    "intents": [
+      {
+        "id": "wanderer.hit",
+        "nameKey": "intent.wanderer.hit",
+        "target": "enemy",
+        "effects": [
+          {
+            "effectId": "core.damage",
+            "params": {
+              "amount": 6
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "enemy.dried-person",
+    "nameKey": "enemy.dried-person.name",
+    "level": 1,
+    "maxHealth": 28,
+    "mechanismKey": "enemy.dried-person.mechanism",
+    "notesKey": "enemy.dried-person.notes",
+    "intents": [
+      {
+        "id": "dried.hit",
+        "nameKey": "intent.dried.hit",
+        "target": "enemy",
+        "effects": [
+          {
+            "effectId": "core.damage",
+            "params": {
+              "amount": 7
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "enemy.meat-mass",
+    "nameKey": "enemy.meat-mass.name",
+    "level": 1,
+    "maxHealth": 32,
+    "mechanismKey": "enemy.meat-mass.mechanism",
+    "notesKey": "enemy.meat-mass.notes",
+    "intents": [
+      {
+        "id": "meat.hit",
+        "nameKey": "intent.meat.hit",
+        "target": "enemy",
+        "effects": [
+          {
+            "effectId": "core.damage",
+            "params": {
+              "amount": 8
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "enemy.sand-worm",
+    "nameKey": "enemy.sand-worm.name",
+    "level": 1,
+    "maxHealth": 30,
+    "mechanismKey": "enemy.sand-worm.mechanism",
+    "notesKey": "enemy.sand-worm.notes",
+    "intents": [
+      {
+        "id": "worm.bite",
+        "nameKey": "intent.worm.bite",
+        "target": "enemy",
+        "effects": [
+          {
+            "effectId": "core.damage",
+            "params": {
+              "amount": 9
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "enemy.elite-barking-dog",
+    "nameKey": "enemy.elite-barking-dog.name",
+    "level": 1,
+    "maxHealth": 58,
+    "mechanismKey": "enemy.elite-barking-dog.mechanism",
+    "notesKey": "enemy.elite-barking-dog.notes",
+    "intents": [
+      {
+        "id": "elite.bark",
+        "nameKey": "intent.elite.bark",
+        "target": "enemy",
+        "effects": [
+          {
+            "effectId": "core.damage",
+            "params": {
+              "amount": 12
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "enemy.elite-sand-worm",
+    "nameKey": "enemy.elite-sand-worm.name",
+    "level": 1,
+    "maxHealth": 70,
+    "mechanismKey": "enemy.elite-sand-worm.mechanism",
+    "notesKey": "enemy.elite-sand-worm.notes",
+    "intents": [
+      {
+        "id": "elite.worm",
+        "nameKey": "intent.elite.worm",
+        "target": "enemy",
+        "effects": [
+          {
+            "effectId": "core.damage",
+            "params": {
+              "amount": 14
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "enemy.elite-hungry-person",
+    "nameKey": "enemy.elite-hungry-person.name",
+    "level": 1,
+    "maxHealth": 64,
+    "mechanismKey": "enemy.elite-hungry-person.mechanism",
+    "notesKey": "enemy.elite-hungry-person.notes",
+    "intents": [
+      {
+        "id": "elite.hunger",
+        "nameKey": "intent.elite.hunger",
+        "target": "enemy",
+        "effects": [
+          {
+            "effectId": "core.damage",
+            "params": {
+              "amount": 13
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "enemy.rotten-person",
+    "nameKey": "enemy.rotten-person.name",
+    "level": 2,
+    "maxHealth": 34,
+    "mechanismKey": "enemy.rotten-person.mechanism",
+    "notesKey": "enemy.rotten-person.notes",
+    "intents": [
+      {
+        "id": "rotten.hit",
+        "nameKey": "intent.rotten.hit",
+        "target": "enemy",
+        "effects": [
+          {
+            "effectId": "core.damage",
+            "params": {
+              "amount": 8
+            }
+          }
+        ]
+      },
+      {
+        "id": "rotten.regenerate",
+        "nameKey": "intent.rotten.regenerate",
+        "target": "self",
+        "effects": [
+          {
+            "effectId": "core.heal",
+            "params": {
+              "amount": 4
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "enemy.armed-guard",
+    "nameKey": "enemy.armed-guard.name",
+    "level": 3,
+    "maxHealth": 50,
+    "mechanismKey": "enemy.armed-guard.mechanism",
+    "notesKey": "enemy.armed-guard.notes",
+    "intents": [
+      {
+        "id": "guard.raise",
+        "nameKey": "intent.guard.raise",
+        "target": "self",
+        "effects": [
+          {
+            "effectId": "core.block",
+            "params": {
+              "amount": 9
+            }
+          }
+        ]
+      },
+      {
+        "id": "guard.fire",
+        "nameKey": "intent.guard.fire",
+        "target": "enemy",
+        "effects": [
+          {
+            "effectId": "core.damage",
+            "params": {
+              "amount": 11
+            }
+          }
+        ]
+      },
+      {
+        "id": "guard.advance",
+        "nameKey": "intent.guard.advance",
+        "target": "enemy",
+        "effects": [
+          {
+            "effectId": "core.damage",
+            "params": {
+              "amount": 7
+            }
+          },
+          {
+            "effectId": "core.blockSource",
+            "params": {
+              "amount": 5
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "enemy.strange-statue",
+    "nameKey": "enemy.strange-statue.name",
+    "level": 4,
+    "maxHealth": 68,
+    "mechanismKey": "enemy.strange-statue.mechanism",
+    "notesKey": "enemy.strange-statue.notes",
+    "intents": [
+      {
+        "id": "statue.shell",
+        "nameKey": "intent.statue.shell",
+        "target": "self",
+        "effects": [
+          {
+            "effectId": "core.block",
+            "params": {
+              "amount": 12
+            }
+          }
+        ]
+      },
+      {
+        "id": "statue.press",
+        "nameKey": "intent.statue.press",
+        "target": "enemy",
+        "effects": [
+          {
+            "effectId": "core.damage",
+            "params": {
+              "amount": 14
+            }
+          }
+        ]
+      },
+      {
+        "id": "statue.pulse",
+        "nameKey": "intent.statue.pulse",
+        "target": "enemy",
+        "effects": [
+          {
+            "effectId": "core.damage",
+            "params": {
+              "amount": 20
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "enemy.sand-messenger",
+    "nameKey": "enemy.sand-messenger.name",
+    "level": 3,
+    "maxHealth": 60,
+    "mechanismKey": "enemy.sand-messenger.mechanism",
+    "notesKey": "enemy.sand-messenger.notes",
+    "intents": [
+      {
+        "id": "messenger.cut",
+        "nameKey": "intent.messenger.cut",
+        "target": "enemy",
+        "effects": [
+          {
+            "effectId": "core.damage",
+            "params": {
+              "amount": 10
+            }
+          }
+        ]
+      },
+      {
+        "id": "messenger.cover",
+        "nameKey": "intent.messenger.cover",
+        "target": "self",
+        "effects": [
+          {
+            "effectId": "core.block",
+            "params": {
+              "amount": 10
+            }
+          }
+        ]
+      },
+      {
+        "id": "messenger.storm",
+        "nameKey": "intent.messenger.storm",
+        "target": "enemy",
+        "effects": [
+          {
+            "effectId": "core.damage",
+            "params": {
+              "amount": 15
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "boss.hunger-mass",
+    "nameKey": "boss.hunger-mass.name",
+    "level": 1,
+    "maxHealth": 55,
+    "mechanismKey": "boss.hunger-mass.mechanism",
+    "notesKey": "boss.hunger-mass.notes",
+    "intents": [
+      {
+        "id": "hunger.swallow",
+        "nameKey": "intent.hunger.swallow",
+        "target": "enemy",
+        "effects": [
+          {
+            "effectId": "core.damage",
+            "params": {
+              "amount": 8
+            }
+          }
+        ]
+      },
+      {
+        "id": "hunger.digest",
+        "nameKey": "intent.hunger.digest",
+        "target": "self",
+        "effects": [
+          {
+            "effectId": "core.heal",
+            "params": {
+              "amount": 6
+            }
+          }
+        ]
+      },
+      {
+        "id": "hunger.crush",
+        "nameKey": "intent.hunger.crush",
+        "target": "enemy",
+        "effects": [
+          {
+            "effectId": "core.damage",
+            "params": {
+              "amount": 12
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "boss.truth-seer",
+    "nameKey": "boss.truth-seer.name",
+    "level": 2,
+    "maxHealth": 82,
+    "mechanismKey": "boss.truth-seer.mechanism",
+    "notesKey": "boss.truth-seer.notes",
+    "intents": [
+      {
+        "id": "seer.observe",
+        "nameKey": "intent.seer.observe",
+        "target": "self",
+        "effects": [
+          {
+            "effectId": "core.block",
+            "params": {
+              "amount": 12
+            }
+          }
+        ]
+      },
+      {
+        "id": "seer.expose",
+        "nameKey": "intent.seer.expose",
+        "target": "enemy",
+        "effects": [
+          {
+            "effectId": "core.damage",
+            "params": {
+              "amount": 14
+            }
+          }
+        ]
+      },
+      {
+        "id": "seer.judgement",
+        "nameKey": "intent.seer.judgement",
+        "target": "enemy",
+        "effects": [
+          {
+            "effectId": "core.damage",
+            "params": {
+              "amount": 18
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "boss.terror-violence",
+    "nameKey": "boss.terror-violence.name",
+    "level": 3,
+    "maxHealth": 112,
+    "mechanismKey": "boss.terror-violence.mechanism",
+    "notesKey": "boss.terror-violence.notes",
+    "intents": [
+      {
+        "id": "violence.one",
+        "nameKey": "intent.violence.one",
+        "target": "enemy",
+        "effects": [
+          {
+            "effectId": "core.damage",
+            "params": {
+              "amount": 16
+            }
+          }
+        ]
+      },
+      {
+        "id": "violence.two",
+        "nameKey": "intent.violence.two",
+        "target": "enemy",
+        "effects": [
+          {
+            "effectId": "core.damage",
+            "params": {
+              "amount": 20
+            }
+          }
+        ]
+      },
+      {
+        "id": "violence.three",
+        "nameKey": "intent.violence.three",
+        "target": "enemy",
+        "effects": [
+          {
+            "effectId": "core.damage",
+            "params": {
+              "amount": 24
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "boss.angel-question",
+    "nameKey": "boss.angel-question.name",
+    "level": 4,
+    "maxHealth": 150,
+    "mechanismKey": "boss.angel-question.mechanism",
+    "notesKey": "boss.angel-question.notes",
+    "intents": [
+      {
+        "id": "angel.fold",
+        "nameKey": "intent.angel.fold",
+        "target": "self",
+        "effects": [
+          {
+            "effectId": "core.block",
+            "params": {
+              "amount": 20
+            }
+          }
+        ]
+      },
+      {
+        "id": "angel.gaze",
+        "nameKey": "intent.angel.gaze",
+        "target": "enemy",
+        "effects": [
+          {
+            "effectId": "core.damage",
+            "params": {
+              "amount": 22
+            }
+          }
+        ]
+      },
+      {
+        "id": "angel.descend",
+        "nameKey": "intent.angel.descend",
+        "target": "enemy",
+        "effects": [
+          {
+            "effectId": "core.damage",
+            "params": {
+              "amount": 16
+            }
+          },
+          {
+            "effectId": "core.blockSource",
+            "params": {
+              "amount": 10
+            }
+          }
+        ]
+      }
+    ]
+  }
+]
