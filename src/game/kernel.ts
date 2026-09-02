@@ -55,6 +55,14 @@ export class GameKernel {
     return clone(this.state);
   }
 
+  resetToMenu(): void {
+    this.state = { phase: 'menu', revision: this.state.revision + 1 };
+    this.random = new NamespacedRandom('not-started');
+    const event = { type: 'flow.menu', payload: {}, revision: this.state.revision } as DomainEvent;
+    this.eventLog.push(event);
+    for (const listener of this.listeners) listener(this.getSnapshot(), [event]);
+  }
+
   getEventLog(): readonly DomainEvent[] {
     return clone(this.eventLog);
   }
@@ -125,10 +133,13 @@ export class GameKernel {
       case 'BUY_SHOP_OFFER': this.buyShopOffer(command.offerId, command.cardInstanceId); break;
       case 'LEAVE_SHOP': this.leaveShop(); break;
       case 'CHOOSE_EVENT': this.chooseEvent(command.optionId, command.cardInstanceId); break;
+      case 'CHOOSE_REST': this.chooseRest(command.option, command.cardInstanceId); break;
       case 'RETURN_TO_MENU': this.state = { phase: 'menu', revision: this.state.revision }; this.emit('flow.menu', {}); break;
       case 'DEBUG_SET_RESOURCE': this.debugSetResource(command.resourceId, command.amount); break;
       case 'DEBUG_JUMP_NODE': this.debugJumpNode(command.nodeId); break;
       case 'DEBUG_START_EVENT': this.debugStartEvent(command.eventId); break;
+      case 'DEBUG_WIN_COMBAT': this.debugWinCombat(); break;
+      case 'DEBUG_JUMP_FLOOR': this.debugJumpFloor(command.floor); break;
       default: command satisfies never;
     }
   }
@@ -145,7 +156,7 @@ export class GameKernel {
     if (this.state.phase !== 'character-select' || !this.state.pendingSeed) throw new Error('A character can only be selected during run setup.');
     const rules = this.content.pack.ruleSet;
     const character = this.content.characters.get(characterId);
-    if (!character || character.id !== rules.startingCharacterId) throw new Error(`Character is unavailable: ${characterId}`);
+    if (!character) throw new Error(`Character is unavailable: ${characterId}`);
     const seed = this.state.pendingSeed;
     const deckIds = character.startingDeck.length ? character.startingDeck : rules.startingDeck;
     const deck: CardInstance[] = deckIds.map((definitionId, index) => ({
@@ -163,7 +174,7 @@ export class GameKernel {
       resourcePerTurn: Object.fromEntries(Object.entries(rules.resources).map(([id, definition]) => [id, definition.perTurn])),
       statuses: [],
       relicIds: [],
-      collectibleIds: [...rules.startingCollectibleIds],
+      collectibleIds: [...(character.startingCollectibleIds ?? rules.startingCollectibleIds)],
     };
     const run: RunState = {
       id: `run-${seed}`,
@@ -193,6 +204,7 @@ export class GameKernel {
       const eligible = run.deck.cards.filter((card) => maxUpgradeLevel(this.content.cards.get(card.definitionId)!) > 0);
       const selected = this.random.pick('setup:max-card', eligible);
       selected.upgradeLevel = maxUpgradeLevel(this.content.cards.get(selected.definitionId)!);
+      this.emit('deck.cardUpgraded', { cardInstanceId: selected.instanceId, definitionId: selected.definitionId });
     } else if (boonId === 'boon.max-health') {
       run.player.maxHealth = Math.ceil(run.player.maxHealth * 1.3);
       run.player.health = run.player.maxHealth;
@@ -226,9 +238,10 @@ export class GameKernel {
     if (index < 0) throw new Error(`Starting card not found: ${cardInstanceId}`);
     const minimum = this.content.pack.ruleSet.shop.removal.minimumDeckSize;
     if (run.deck.cards.length <= minimum) throw new Error(`The deck cannot contain fewer than ${minimum} cards.`);
+    const removed = run.deck.cards[index];
     run.deck.cards.splice(index, 1);
     run.setup!.pendingCardRemovals -= 1;
-    this.emit('setup.cardRemoved', { cardInstanceId, remaining: run.setup!.pendingCardRemovals });
+    this.emit('setup.cardRemoved', { cardInstanceId, definitionId: removed.definitionId, remaining: run.setup!.pendingCardRemovals });
     if (run.setup!.pendingCardRemovals <= 0) {
       (run as RunState).phase = 'theme-select';
       this.state.phase = 'theme-select';
@@ -246,7 +259,7 @@ export class GameKernel {
   }
 
   private generateMap(floor: number): MapState {
-    const { minNodes, rows, shopCount, rewardCount, remainingWeights } = this.content.pack.ruleSet.map;
+    const { minNodes, maxNodes, rows, maxNodesPerRow, shopCount, rewardCount, eliteCount, restCount, remainingWeights } = this.content.pack.ruleSet.map;
     if (floor === 4) {
       const fixedHandlers = ['core.event', 'core.shop', 'core.boss'] as const;
       const fixedNodes = fixedHandlers.map((handlerId, layer) => {
@@ -263,52 +276,132 @@ export class GameKernel {
       });
       return { nodes: fixedNodes };
     }
-    const nodes: MapNodeState[] = [];
-    // Keep the minimum footprint deterministic; the per-layer handler deck remains seeded/random.
-    const targetCount = minNodes;
+
+    const targetCount = this.random.integer(`map:${floor}:count`, minNodes, maxNodes);
     const regularCount = targetCount - 1;
     const shops = this.random.integer(`map:${floor}:shops`, shopCount.min, shopCount.max);
     const rewards = this.random.integer(`map:${floor}:rewards`, rewardCount.min, rewardCount.max);
-    const remaining = regularCount - shops - rewards;
-    if (remaining < 2) throw new Error('Map fixed node counts must leave room for combat and event nodes.');
-    const weightTotal = remainingWeights.combat + remainingWeights.event;
-    const combats = Math.max(1, Math.min(remaining - 1, Math.round(remaining * remainingWeights.combat / weightTotal)));
-    const events = remaining - combats;
-    const eliteCount = Math.min(1, combats);
-    const handlerDeck = this.random.shuffle(`map:${floor}:handlers`, [
-      ...Array.from({ length: shops }, () => 'core.shop'),
-      ...Array.from({ length: rewards }, () => 'core.reward'),
-      ...Array.from({ length: combats - eliteCount }, () => 'core.combat'),
-      ...Array.from({ length: eliteCount }, () => 'core.elite'),
-      ...Array.from({ length: events }, () => 'core.event'),
-    ]);
-    const routeRows = Math.min(rows, regularCount);
+    const elites = eliteCount;
+
+    // One row holds at most maxNodesPerRow nodes, so the board grows tall (rows of 4-5 nodes)
+    // instead of wide; the player scrolls the route and enters the boss at the bottom.
+    const routeRows = Math.min(rows, Math.max(3, Math.ceil(regularCount / Math.max(1, maxNodesPerRow))));
     const rowCounts = Array.from({ length: routeRows }, (_, index) =>
       Math.floor(regularCount / routeRows) + (index < regularCount % routeRows ? 1 : 0));
     const maxWidth = Math.max(...rowCounts);
-    let handlerIndex = 0;
+    const centerColumn = (maxWidth - 1) / 2;
 
+    // The row right above the boss is always a rest stop, so every route rests right before the
+    // boss battle. Two more rests sit on the guaranteed spines; any extra fill the rest budget.
+    const preBossRests = rowCounts[routeRows - 1];
+    const restTarget = this.random.integer(`map:${floor}:rests`, restCount.min, restCount.max);
+    const extraRests = Math.max(0, restTarget - preBossRests - 2);
+    const restsTotal = preBossRests + 2 + extraRests;
+
+    const remaining = regularCount - shops - rewards - elites - restsTotal;
+    if (remaining < 2) throw new Error('Map fixed node counts must leave room for combat and event nodes.');
+    const weightTotal = remainingWeights.combat + remainingWeights.event;
+    const combats = Math.max(elites, Math.round(remaining * remainingWeights.combat / weightTotal));
+    const events = remaining - combats;
+    if (events < 0) throw new Error('Map node counts leave no room for event nodes.');
+    const normalCombats = combats - elites;
+
+    // Build the raw node slots (handler assigned later); boss occupies the final slot.
+    interface BuildNode { layer: number; column: number; handlerId?: string }
+    const build: BuildNode[] = [];
     for (let layer = 0; layer <= routeRows; layer += 1) {
       const isBoss = layer === routeRows;
       const count = isBoss ? 1 : rowCounts[layer];
       for (let column = 0; column < count; column += 1) {
-        const handlerId = isBoss ? 'core.boss' : handlerDeck[handlerIndex++];
-        const definitions = this.content.pack.nodes.filter((node) => node.handlerId === handlerId && (!node.floors || node.floors.includes(floor)));
-        if (definitions.length === 0) throw new Error(`No node definition for ${handlerId} on floor ${floor}.`);
-        const definition = this.random.pick(`map:${floor}:definition:${layer}:${column}`, definitions);
-        nodes.push({
-          id: `floor-${floor}-node-${layer}-${column}`,
+        build.push({
           layer,
           column: count === 1 ? Math.floor(maxWidth / 2) : Math.round((column / Math.max(1, count - 1)) * (maxWidth - 1)),
-          definitionId: definition.id,
-          handlerId,
-          connections: [],
-          visited: false,
-          available: layer === 0,
-          iconKey: this.mapIconKey(handlerId, floor),
         });
       }
     }
+    const bossIndex = build.length - 1;
+    build[bossIndex].handlerId = 'core.boss';
+    for (const node of build) {
+      if (node.layer === routeRows - 1) node.handlerId = 'core.rest';
+    }
+
+    const nearestUnassigned = (layer: number, column: number, exclude?: BuildNode): BuildNode | undefined => build
+      .filter((node) => node.layer === layer && node.handlerId === undefined && node !== exclude)
+      .sort((left, right) => Math.abs(left.column - column) - Math.abs(right.column - column))[0];
+
+    // Two guaranteed spines to the boss; each spine carries rest/shop/reward/combat across four
+    // interior layers spread over the board. Combined with the pre-boss rest row, each spine route
+    // holds at least 1 shop, 1 reward and 2 rests.
+    const spineBases = [Math.max(0, Math.floor(maxWidth * 0.15)), Math.min(maxWidth - 1, Math.floor(maxWidth * 0.85))];
+    const spineLayers = Array.from({ length: 4 }, (_, index) => 1 + Math.round(((routeRows - 3) * index) / 3));
+    const spineA: BuildNode[] = [];
+    const spineB: BuildNode[] = [];
+    const startA = nearestUnassigned(0, spineBases[0]);
+    const startB = nearestUnassigned(0, spineBases[1], startA);
+    if (!startA || !startB || startA === startB) throw new Error('Map could not allocate guaranteed boss routes.');
+    spineA.push(startA);
+    spineB.push(startB);
+    for (const layer of spineLayers) {
+      const t = routeRows <= 1 ? 0 : layer / routeRows;
+      const columnA = Math.max(0, Math.min(rowCounts[layer] - 1, Math.round(spineBases[0] + (centerColumn - spineBases[0]) * t)));
+      const columnB = Math.max(0, Math.min(rowCounts[layer] - 1, Math.round(spineBases[1] + (centerColumn - spineBases[1]) * t)));
+      const nodeA = nearestUnassigned(layer, columnA);
+      const nodeB = nearestUnassigned(layer, columnB, nodeA);
+      if (!nodeA || !nodeB || nodeA === nodeB) throw new Error('Map could not allocate guaranteed boss routes.');
+      spineA.push(nodeA);
+      spineB.push(nodeB);
+    }
+    const spineHandlersA = ['core.rest', 'core.shop', 'core.reward', 'core.combat'];
+    const spineHandlersB = ['core.rest', 'core.reward', 'core.shop', 'core.combat'];
+    for (let index = 0; index < 4; index += 1) {
+      spineA[index + 1].handlerId = spineHandlersA[index];
+      spineB[index + 1].handlerId = spineHandlersB[index];
+    }
+
+    // Five elite battles, confined to three interior layers so no single route meets more than three.
+    const eliteLayers = [1, 1, 2, 2, 3];
+    for (const layer of eliteLayers) {
+      const pool = build.filter((node) => node.layer === layer && node.handlerId === undefined);
+      const node = this.random.pick(`map:${floor}:elite:${layer}`, pool);
+      node.handlerId = 'core.elite';
+    }
+
+    // Remaining shops/rewards plus any extra rests land on random unassigned interior slots.
+    const extras = this.random.shuffle(`map:${floor}:extras`, [
+      ...Array.from({ length: Math.max(0, shops - 2) }, () => 'core.shop'),
+      ...Array.from({ length: Math.max(0, rewards - 2) }, () => 'core.reward'),
+      ...Array.from({ length: extraRests }, () => 'core.rest'),
+    ]);
+    for (const handlerId of extras) {
+      const pool = build.filter((node) => node.handlerId === undefined && node.layer !== 0 && node.layer !== routeRows);
+      const node = this.random.pick(`map:${floor}:extra:${handlerId}`, pool);
+      node.handlerId = handlerId;
+    }
+
+    // Everything else: 40% combat (minus the elites already placed), 60% event.
+    const fillPool = this.random.shuffle(`map:${floor}:fill`, build.filter((node) => node.handlerId === undefined));
+    fillPool.forEach((node, index) => {
+      node.handlerId = index < normalCombats ? 'core.combat' : 'core.event';
+    });
+
+    const nodes: MapNodeState[] = build.map((slot, index) => {
+      const isBoss = index === bossIndex;
+      const handlerId = slot.handlerId ?? 'core.combat';
+      const definitions = this.content.pack.nodes.filter((node) => node.handlerId === handlerId && (!node.floors || node.floors.includes(floor)));
+      if (definitions.length === 0) throw new Error(`No node definition for ${handlerId} on floor ${floor}.`);
+      const definition = this.random.pick(`map:${floor}:definition:${slot.layer}:${slot.column}`, definitions);
+      return {
+        id: `floor-${floor}-node-${slot.layer}-${slot.column}`,
+        layer: slot.layer,
+        column: slot.column,
+        definitionId: definition.id,
+        handlerId,
+        connections: [],
+        visited: false,
+        available: slot.layer === 0 && !isBoss,
+        iconKey: this.mapIconKey(handlerId, floor),
+      };
+    });
 
     for (let layer = 0; layer < routeRows; layer += 1) {
       const current = nodes.filter((node) => node.layer === layer);
@@ -331,6 +424,34 @@ export class GameKernel {
         }
       }
     }
+
+    // Force the two guaranteed spines to stay connected; their routes continue through the
+    // pre-boss rest row (all rest nodes) into the boss battle.
+    // Keep guaranteed spine links routed through every intermediate row. The spine
+    // markers are spread across the board for content guarantees, but a map edge may
+    // only ever connect the immediately following layer.
+    for (const spine of [spineA, spineB]) {
+      for (let index = 0; index < spine.length - 1; index += 1) {
+        let from = nodes.find((node) => node.layer === spine[index].layer && node.column === spine[index].column);
+        const destination = nodes.find((node) => node.layer === spine[index + 1].layer && node.column === spine[index + 1].column);
+        if (!from || !destination) continue;
+        for (let layer = from.layer + 1; layer <= destination.layer; layer += 1) {
+          const to = layer === destination.layer
+            ? destination
+            : [...nodes].filter((node) => node.layer === layer)
+              .sort((left, right) => Math.abs(left.column - from!.column) - Math.abs(right.column - from!.column))[0];
+          if (!to) break;
+          if (!from.connections.includes(to.id)) from.connections.push(to.id);
+          from = to;
+        }
+      }
+    }
+    for (const node of nodes) {
+      for (const connectionId of node.connections) {
+        const target = nodes.find((candidate) => candidate.id === connectionId);
+        if (!target || target.layer !== node.layer + 1) throw new Error(`Map connection must target the next layer: ${node.id} -> ${connectionId}`);
+      }
+    }
     return { nodes };
   }
 
@@ -338,7 +459,7 @@ export class GameKernel {
     if (handlerId === 'core.boss') return `map.boss-${floor}`;
     return ({
       'core.combat': 'map.combat', 'core.elite': 'map.elite', 'core.shop': 'map.shop',
-      'core.event': 'map.event', 'core.reward': 'map.reward',
+      'core.event': 'map.event', 'core.reward': 'map.reward', 'core.rest': 'map.rest',
     } as Record<string, string>)[handlerId] ?? 'map.unknown';
   }
 
@@ -384,6 +505,13 @@ export class GameKernel {
         this.emit('reward.started', { source: 'node' });
         break;
       }
+      case 'rest': {
+        const run = this.requireRun();
+        run.rest = { nodeId: run.map.currentNodeId };
+        run.phase = 'rest'; this.state.phase = 'rest';
+        this.emit('rest.started', {});
+        break;
+      }
       default: resolution satisfies never;
     }
   }
@@ -393,7 +521,8 @@ export class GameKernel {
     const encounter = this.content.encounters.get(encounterId);
     if (!encounter) throw new Error(`Unknown encounter: ${encounterId}`);
     let enemyIds = [...encounter.enemyIds];
-    if ((encounter.category === 'normal' || encounter.category === 'elite') && enemyIds.length > 1) {
+    const enemyCount = Math.max(1, encounter.enemyCount ?? 1);
+    if (encounter.category === 'normal' || encounter.category === 'elite') {
       const openingPool = new Set(['enemy.dirty-dog', 'enemy.sick-dog', 'enemy.wanderer', 'enemy.dried-person']);
       if (run.floor === 1 && run.metrics.nodesVisited <= 4) {
         const restricted = enemyIds.filter((id) => openingPool.has(id));
@@ -401,7 +530,12 @@ export class GameKernel {
       }
       const unseen = enemyIds.filter((id) => !(run.encounteredEnemyIds ?? []).includes(id));
       const pool = unseen.length > 0 ? unseen : enemyIds;
-      enemyIds = [this.random.pick(`encounter:${encounterId}:${run.metrics.battlesStarted}:enemy`, pool)];
+      enemyIds = [];
+      for (let index = 0; index < enemyCount; index += 1) {
+        enemyIds.push(this.random.pick(`encounter:${encounterId}:${run.metrics.battlesStarted}:${index}:enemy`, pool));
+      }
+    } else if (enemyIds.length === 0) {
+      throw new Error(`Encounter has no enemies: ${encounterId}`);
     }
     run.encounteredEnemyIds ??= [];
     for (const enemyId of enemyIds) if (!run.encounteredEnemyIds.includes(enemyId)) run.encounteredEnemyIds.push(enemyId);
@@ -419,6 +553,7 @@ export class GameKernel {
       hand: [], discardPile: [], exhaustPile: [],
       cardsDrawn: 0,
       angerAttacksUsed: 0,
+      concealAttacksUsed: 0,
     };
     run.metrics.battlesStarted += 1;
     run.combat = combat; run.phase = 'combat'; this.state.phase = 'combat';
@@ -440,7 +575,10 @@ export class GameKernel {
     if (!definition) throw new Error(`Unknown card: ${card.definitionId}`);
     const baseCost = cardCost(definition, card);
     const clarity = definition.type === 'skill' ? this.statusStacks(combat.player.statuses, 'status.clear') : 0;
+    const concealStacks = this.statusStacks(combat.player.statuses, 'status.conceal');
+    const concealedAttack = definition.type === 'attack' && concealStacks > (combat.concealAttacksUsed ?? 0);
     const cost = { ...baseCost, amount: Math.max(0, baseCost.amount - clarity) };
+    if (concealedAttack) cost.amount = 0;
     const available = combat.player.resources[cost.resourceId];
     if (available === undefined || available < cost.amount) throw new Error('Not enough resource to play this card.');
     let target: string | 'player' | undefined;
@@ -453,7 +591,10 @@ export class GameKernel {
     }
     combat.player.resources[cost.resourceId] -= cost.amount;
     this.executeInvocations(cardEffects(definition, card), 'player', target, undefined, definition.type);
-    if (definition.type === 'attack') combat.angerAttacksUsed = (combat.angerAttacksUsed ?? 0) + 1;
+    if (definition.type === 'attack') {
+      combat.angerAttacksUsed = (combat.angerAttacksUsed ?? 0) + 1;
+      if (concealedAttack) combat.concealAttacksUsed = (combat.concealAttacksUsed ?? 0) + 1;
+    }
     combat.hand.splice(cardIndex, 1);
     (definition.playDestination === 'exhaust' ? combat.exhaustPile : combat.discardPile).push(card);
     this.emit('card.played', { cardInstanceId, definitionId: definition.id, targetId: target });
@@ -485,6 +626,7 @@ export class GameKernel {
     if (this.checkCombatEnd()) return;
     combat.turn += 1;
     combat.angerAttacksUsed = 0;
+    combat.concealAttacksUsed = 0;
     combat.activeSide = 'player';
     if (this.content.pack.ruleSet.turn.clearBlockAtStart) combat.player.block = 0;
     this.resetPlayerResources(combat.player);
@@ -556,7 +698,10 @@ export class GameKernel {
         target.block -= absorbed;
         const dealt = Math.max(0, operation.amount - absorbed);
         target.health = Math.max(0, target.health - dealt);
-        if (operation.target === 'player') run.metrics.damageTaken += dealt;
+        if (operation.target === 'player') {
+          run.metrics.damageTaken += dealt;
+          if (absorbed > 0 && dealt === 0) this.runTriggers('afterDamageBlocked');
+        }
         this.emit('effect.damage', { target: operation.target, amount: operation.amount, absorbed });
         break;
       }
@@ -734,6 +879,14 @@ export class GameKernel {
       if (encounter.category === 'boss') {
         run.metrics.bossesDefeated += 1;
         run.metrics.floorsCleared += 1;
+        if (run.floor >= run.totalFloors) {
+          const result = this.calculateResult('victory');
+          run.phase = 'result';
+          run.result = result;
+          this.state.phase = 'result';
+          this.emit('run.completed', { outcome: 'victory', score: result?.score ?? 0 });
+          return true;
+        }
       }
       const pool = encounter.rewardPool?.length ? encounter.rewardPool : this.content.pack.rewards.map((reward) => reward.id);
       const count = Math.min(this.content.pack.ruleSet.rewardChoiceCount, pool.length);
@@ -797,7 +950,12 @@ export class GameKernel {
         priceStep: 0, purchaseCount: 0, soldOut: false,
       };
     });
-    const collectiblePool = this.content.pack.collectibles.filter((item) => item.kind === 'positive' && !run.player.collectibleIds.includes(item.id));
+    const exclusiveCollectibleIds = new Set([
+      ...this.content.pack.characters.flatMap((character) => character.startingCollectibleIds ?? []),
+      ...this.content.pack.ruleSet.startingCollectibleIds,
+      'collectible.greedy-coin',
+    ]);
+    const collectiblePool = this.content.pack.collectibles.filter((item) => item.kind === 'positive' && !exclusiveCollectibleIds.has(item.id) && !run.player.collectibleIds.includes(item.id));
     for (const [index, collectible] of this.random.shuffle(`shop:${namespace}:collectibles`, collectiblePool).slice(0, rules.collectibleOfferCount).entries()) {
       const range = rules.collectiblePriceRanges?.[collectible.rarity ?? 'blue'] ?? { min: rules.collectiblePriceMin, max: rules.collectiblePriceMax };
       offers.push({
@@ -839,7 +997,7 @@ export class GameKernel {
     if (offer.type === 'upgrade' && selected) selected.upgradeLevel += 1;
     offer.purchaseCount += 1;
     if (offer.type === 'card' || offer.type === 'collectible') offer.soldOut = true;
-    this.emit('shop.purchased', { offerId, type: offer.type, price });
+    this.emit('shop.purchased', { offerId, type: offer.type, price, cardInstanceId, definitionId: selected?.definitionId });
   }
 
   private chooseEvent(optionId: string, cardInstanceId?: string): void {
@@ -859,15 +1017,18 @@ export class GameKernel {
     if (option.recordsBloodLetterCondition) run.bloodLetterConditionRecorded = true;
     if (option.requiresCardChoice && selectedCard) {
       if (option.transformsCard) {
+        const previousDefinitionId = selectedCard.definitionId;
         const candidates = this.content.pack.cards.filter((card) => card.id !== selectedCard.definitionId);
         if (candidates.length > 0) {
           selectedCard.definitionId = this.random.pick(`event:${definition.id}:${option.id}:transform`, candidates).id;
           selectedCard.upgradeLevel = 0;
+          this.emit('deck.cardTransformed', { cardInstanceId: selectedCard.instanceId, previousDefinitionId, definitionId: selectedCard.definitionId });
         }
       } else {
         const cardDefinition = this.content.cards.get(selectedCard.definitionId)!;
         if (selectedCard.upgradeLevel >= maxUpgradeLevel(cardDefinition)) throw new Error('所选卡牌已经强化至最高等级。');
         selectedCard.upgradeLevel += 1;
+        this.emit('deck.cardUpgraded', { cardInstanceId: selectedCard.instanceId, definitionId: selectedCard.definitionId });
       }
     }
     this.emit('event.chosen', { eventId: definition.id, optionId });
@@ -878,6 +1039,27 @@ export class GameKernel {
       return;
     }
     if (option.guaranteedCollectibleId) this.gainCollectible(option.guaranteedCollectibleId);
+    this.returnToMap();
+  }
+
+  private chooseRest(option: 'heal' | 'upgrade', cardInstanceId?: string): void {
+    const run = this.requirePhase('rest');
+    if (option === 'heal') {
+      const amount = Math.max(1, Math.ceil(run.player.maxHealth * 0.3));
+      run.player.health = Math.min(run.player.maxHealth, run.player.health + amount);
+      run.rest = undefined;
+      this.emit('rest.used', { percent: 0.3, amount });
+      this.returnToMap();
+      return;
+    }
+    if (!cardInstanceId) throw new Error('升级卡牌需要选择一张卡牌。');
+    const card = run.deck.cards.find((candidate) => candidate.instanceId === cardInstanceId);
+    if (!card) throw new Error(`Deck card not found: ${cardInstanceId}`);
+    const definition = this.content.cards.get(card.definitionId)!;
+    if (card.upgradeLevel >= maxUpgradeLevel(definition)) throw new Error('所选卡牌已经强化至最高等级。');
+    card.upgradeLevel += 1;
+    run.rest = undefined;
+    this.emit('rest.upgraded', { cardInstanceId, definitionId: definition.id });
     this.returnToMap();
   }
 
@@ -895,7 +1077,7 @@ export class GameKernel {
 
   private returnToMap(): void {
     const run = this.requireRun();
-    run.phase = 'map'; run.reward = undefined; run.shop = undefined; run.event = undefined;
+    run.phase = 'map'; run.reward = undefined; run.shop = undefined; run.event = undefined; run.rest = undefined;
     this.state.phase = 'map'; this.emit('flow.map', {});
   }
 
@@ -911,7 +1093,7 @@ export class GameKernel {
     const run = this.requireRun();
     const node = run.map.nodes.find((candidate) => candidate.id === nodeId);
     if (!node) throw new Error(`Unknown map node: ${nodeId}`);
-    run.combat = undefined; run.reward = undefined; run.shop = undefined; run.event = undefined;
+    run.combat = undefined; run.reward = undefined; run.shop = undefined; run.event = undefined; run.rest = undefined;
     run.phase = 'map'; this.state.phase = 'map';
     run.map.nodes.forEach((candidate) => { candidate.available = false; });
     node.available = true; node.visited = false;
@@ -922,10 +1104,28 @@ export class GameKernel {
   private debugStartEvent(eventId: string): void {
     const run = this.requireRun();
     if (!this.content.events.has(eventId)) throw new Error(`Unknown event: ${eventId}`);
-    run.combat = undefined; run.reward = undefined; run.shop = undefined;
+    run.combat = undefined; run.reward = undefined; run.shop = undefined; run.rest = undefined;
     run.event = { definitionId: eventId };
     run.phase = 'event'; this.state.phase = 'event';
     this.emit('debug.eventStarted', { eventId });
+  }
+
+  private debugWinCombat(): void {
+    const run = this.requirePhase('combat');
+    if (!run.combat) throw new Error('当前没有进行中的战斗。');
+    run.combat.enemies.forEach((enemy) => { enemy.health = 0; enemy.block = 0; });
+    this.emit('debug.combatWon', { encounterId: run.combat.encounterId });
+    this.checkCombatEnd();
+  }
+
+  private debugJumpFloor(floor: number): void {
+    const run = this.requireRun();
+    if (!Number.isInteger(floor) || floor < 1 || floor > run.totalFloors) throw new Error(`层数必须在 1 到 ${run.totalFloors} 之间。`);
+    run.floor = floor;
+    run.combat = undefined; run.reward = undefined; run.shop = undefined; run.event = undefined; run.rest = undefined; run.result = undefined;
+    run.map = this.generateMap(floor);
+    run.phase = 'map'; this.state.phase = 'map';
+    this.emit('debug.floorJumped', { floor });
   }
 
   private createCardInstance(definitionId: string): CardInstance {

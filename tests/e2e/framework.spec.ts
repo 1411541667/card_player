@@ -7,7 +7,7 @@ async function startRun(page: Page, testInfo?: TestInfo): Promise<void> {
   await page.getByTestId('new-run').click();
   await expect(page.getByTestId('character-select')).toBeVisible();
   if (testInfo) await page.screenshot({ path: testInfo.outputPath('character.png'), fullPage: true });
-  await page.getByTestId('character-select').locator('.selection-card.available').click();
+  await page.getByTestId('character-select').locator('.selection-card.available').first().click();
   await expect(page.getByTestId('boon-select')).toBeVisible();
   if (testInfo) await page.screenshot({ path: testInfo.outputPath('boon.png'), fullPage: true });
   await page.getByTestId('boon-select').locator('.selection-card.available').filter({ hasNotText: /意外横财|轻装上路/ }).first().click();

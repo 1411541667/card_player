@@ -32,6 +32,10 @@
     "action": {
       "perTurn": 3,
       "maximum": 10
+    },
+    "serum": {
+      "perTurn": 3,
+      "maximum": 10
     }
   },
   "turn": {
@@ -99,16 +103,22 @@
   "rewardChoiceCount": 3,
   "map": {
     "floorCount": 4,
-    "minNodes": 20,
-    "maxNodes": 32,
-    "rows": 5,
+    "minNodes": 48,
+    "maxNodes": 60,
+    "rows": 13,
+    "maxNodesPerRow": 5,
     "shopCount": {
-      "min": 3,
-      "max": 4
+      "min": 4,
+      "max": 5
     },
     "rewardCount": {
+      "min": 8,
+      "max": 10
+    },
+    "eliteCount": 5,
+    "restCount": {
       "min": 6,
-      "max": 8
+      "max": 7
     },
     "remainingWeights": {
       "combat": 0.4,

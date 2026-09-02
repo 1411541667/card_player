@@ -51,8 +51,11 @@ const packSchema = z.object({
       minNodes: z.number().int().min(4),
       maxNodes: z.number().int().min(4),
       rows: z.number().int().min(3),
+      maxNodesPerRow: z.number().int().positive(),
       shopCount: z.object({ min: z.number().int().nonnegative(), max: z.number().int().nonnegative() }),
       rewardCount: z.object({ min: z.number().int().nonnegative(), max: z.number().int().nonnegative() }),
+      eliteCount: z.number().int().nonnegative(),
+      restCount: z.object({ min: z.number().int().nonnegative(), max: z.number().int().nonnegative() }),
       remainingWeights: z.object({ combat: z.number().nonnegative(), event: z.number().nonnegative() }),
     }),
     scoring: z.object({
@@ -62,7 +65,7 @@ const packSchema = z.object({
   }),
   characters: z.array(z.object({
     id: z.string(), nameKey: z.string(), descriptionKey: z.string(), resourceId: z.string(),
-    maxHealth: z.number().positive(), startingDeck: z.array(z.string()).min(1), unlockCost: z.number().nonnegative(),
+    maxHealth: z.number().positive(), startingDeck: z.array(z.string()).min(1), startingCollectibleIds: z.array(z.string()).optional(), unlockCost: z.number().nonnegative(),
     metaUpgrades: z.array(z.object({ id: z.string(), stat: z.enum(['maxHealth', 'startingResource']), amount: z.number(), cost: z.number().nonnegative() })),
   })).min(1),
   cards: z.array(z.object({
@@ -79,7 +82,7 @@ const packSchema = z.object({
     mechanismKey: z.string(), notesKey: z.string(), animationKey: z.string().optional(),
     intents: z.array(z.object({ id: z.string(), nameKey: z.string(), target: z.enum(['none', 'self', 'enemy']), effects: z.array(effectSchema) })).min(1),
   })),
-  encounters: z.array(z.object({ id: z.string(), level: z.number().int().min(1), category: z.enum(['normal', 'special', 'elite', 'boss']), enemyIds: z.array(z.string()).min(1), rewardPool: z.array(z.string()).optional() })),
+  encounters: z.array(z.object({ id: z.string(), level: z.number().int().min(1), category: z.enum(['normal', 'special', 'elite', 'boss']), enemyIds: z.array(z.string()).min(1), enemyCount: z.number().int().positive().optional(), rewardPool: z.array(z.string()).optional() })),
   nodes: z.array(z.object({ id: z.string(), handlerId: z.string().min(1), floors: z.array(z.number().int().positive()).optional(), encounterPool: z.array(z.string()).optional(), eventPool: z.array(z.string()).optional(), rewardPool: z.array(z.string()).optional() })),
   events: z.array(z.object({
     id: z.string(), titleKey: z.string(), bodyKey: z.string(),
@@ -98,7 +101,7 @@ const packSchema = z.object({
   })),
   collectibles: z.array(z.object({
     id: z.string(), nameKey: z.string(), descriptionKey: z.string(), kind: z.enum(['positive', 'negative', 'story']), rarity: z.enum(['blue', 'purple', 'gold']).optional(),
-    triggers: z.array(z.object({ hook: z.enum(['combatStart', 'turnStart', 'turnEnd', 'afterCardDrawn', 'afterCardPlayed', 'combatEnd']), cardTag: z.string().optional(), every: z.number().int().positive().optional(), effects: z.array(effectSchema) })).optional(),
+    triggers: z.array(z.object({ hook: z.enum(['combatStart', 'turnStart', 'turnEnd', 'afterCardDrawn', 'afterCardPlayed', 'combatEnd', 'afterDamageBlocked']), cardTag: z.string().optional(), every: z.number().int().positive().optional(), effects: z.array(effectSchema) })).optional(),
     onAcquire: z.array(effectSchema).optional(),
   })),
   rewards: z.array(z.object({

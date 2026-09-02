@@ -7,3 +7,4 @@ test-results/
 .npm-cache/
 *.log
 *.tsbuildinfo
+release/

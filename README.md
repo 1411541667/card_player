@@ -21,6 +21,18 @@ npm run content:check
 npm run content:sync
 ```
 
+## Windows 桌面发行
+
+桌面版使用 WebView2 在独立窗口运行，不会打开系统浏览器。安装 Microsoft .NET 8 SDK 和 Inno Setup 后，修改 `package.json` 中的 `version`，执行：
+
+```powershell
+npm run package:windows
+```
+
+脚本会自动检查内容、运行测试和 lint、构建前端、发布 Windows 程序并生成 `release/Roguelike-Card-Framework-{version}-Setup.exe`。没有 Inno Setup 时仍会生成 `release/stage-{version}` 可运行目录。
+
+正式版本使用 Git 标签（例如 `v0.2.0`）标记；安装升级不会删除用户存档。
+
 The main menu includes settings, encounter-unlocked encyclopedia entries, and the last three run
 records. Use the backtick key or the **开发面板** button to inspect state, set fixture resources, jump to
 nodes, view domain events, and import or export a `RunSaveV2` document.

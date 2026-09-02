@@ -13,6 +13,8 @@
     "test:e2e": "playwright test",
     "content:sync": "node scripts/sync-content.mjs",
     "content:check": "node scripts/sync-content.mjs --check"
+    ,"package:portable": "powershell -ExecutionPolicy Bypass -File scripts/package-portable.ps1"
+    ,"package:windows": "powershell -ExecutionPolicy Bypass -File scripts/package-windows.ps1"
   },
   "dependencies": {
     "phaser": "^3.90.0",

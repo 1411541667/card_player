@@ -19,10 +19,12 @@ export function createInitialMetaProgress(pack: ContentPack): MetaProgressV2 {
 }
 
 export class MetaProgressStore {
-  constructor(private readonly storage: Storage = window.localStorage) {}
+  constructor(private readonly storage: Storage = window.localStorage, private accountId?: string) {}
+  setAccountId(accountId: string): void { this.accountId = accountId; }
+  private key(): string { return this.accountId ? `${META_PROGRESS_KEY}.${this.accountId}` : META_PROGRESS_KEY; }
 
   load(fallback: MetaProgressV2): MetaProgressV2 {
-    const raw = this.storage.getItem(META_PROGRESS_KEY);
+    const raw = this.storage.getItem(this.key());
     if (!raw) return structuredClone(fallback);
     try {
       const parsed = JSON.parse(raw) as MetaProgressV2;
@@ -37,13 +39,13 @@ export class MetaProgressStore {
         runHistory: (parsed.runHistory ?? []).slice(0, 3),
       };
     } catch {
-      this.storage.removeItem(META_PROGRESS_KEY);
+      this.storage.removeItem(this.key());
       return structuredClone(fallback);
     }
   }
 
   save(profile: MetaProgressV2): void {
-    this.storage.setItem(META_PROGRESS_KEY, JSON.stringify(profile));
+    this.storage.setItem(this.key(), JSON.stringify(profile));
   }
 
   recordRun(profile: MetaProgressV2, run: RunState): MetaProgressV2 {

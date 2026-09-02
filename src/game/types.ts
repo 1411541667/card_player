@@ -1,7 +1,7 @@
-export type GamePhase = 'menu' | 'character-select' | 'boon-select' | 'boon-remove' | 'theme-select' | 'map' | 'combat' | 'reward' | 'shop' | 'event' | 'result';
+export type GamePhase = 'menu' | 'character-select' | 'boon-select' | 'boon-remove' | 'theme-select' | 'map' | 'combat' | 'reward' | 'shop' | 'event' | 'rest' | 'result';
 export type NodeKind = string;
 export type TargetRule = 'none' | 'self' | 'enemy';
-export type TriggerHook = 'combatStart' | 'turnStart' | 'turnEnd' | 'afterCardDrawn' | 'afterCardPlayed' | 'combatEnd';
+export type TriggerHook = 'combatStart' | 'turnStart' | 'turnEnd' | 'afterCardDrawn' | 'afterCardPlayed' | 'combatEnd' | 'afterDamageBlocked';
 export type CardType = 'attack' | 'ability' | 'skill' | 'defense';
 export type CardRarity = 'gray' | 'blue' | 'purple' | 'gold' | 'red';
 export type CollectibleRarity = 'blue' | 'purple' | 'gold';
@@ -46,8 +46,11 @@ export interface RuleSetDefinition {
     minNodes: number;
     maxNodes: number;
     rows: number;
+    maxNodesPerRow: number;
     shopCount: { min: number; max: number };
     rewardCount: { min: number; max: number };
+    eliteCount: number;
+    restCount: { min: number; max: number };
     remainingWeights: { combat: number; event: number };
   };
   scoring: {
@@ -68,6 +71,8 @@ export interface CharacterDefinition {
   resourceId: string;
   maxHealth: number;
   startingDeck: string[];
+  /** Per-character starting collectibles; falls back to the rule set list when absent. */
+  startingCollectibleIds?: string[];
   unlockCost: number;
   metaUpgrades: Array<{ id: string; stat: 'maxHealth' | 'startingResource'; amount: number; cost: number }>;
 }
@@ -113,6 +118,8 @@ export interface EncounterDefinition {
   level: number;
   category: 'normal' | 'special' | 'elite' | 'boss';
   enemyIds: string[];
+  /** How many enemies spawn for this encounter (default 1). */
+  enemyCount?: number;
   rewardPool?: string[];
 }
 
@@ -265,6 +272,8 @@ export interface CombatState {
   exhaustPile: CardInstance[];
   cardsDrawn: number;
   angerAttacksUsed?: number;
+  /** Attack cards played for free this turn while status.conceal is active. */
+  concealAttacksUsed?: number;
 }
 
 export interface MapNodeState {
@@ -312,6 +321,10 @@ export interface EventState {
   definitionId: string;
 }
 
+export interface RestState {
+  nodeId?: string;
+}
+
 export interface ResultState {
   outcome: 'victory' | 'defeat';
   completedNodes: number;
@@ -349,6 +362,7 @@ export interface RunState {
   reward?: RewardState;
   shop?: ShopState;
   event?: EventState;
+  rest?: RestState;
   result?: ResultState;
   metrics: RunMetrics;
   setup?: RunSetupState;
@@ -381,10 +395,13 @@ export type GameCommand =
   | { type: 'BUY_SHOP_OFFER'; offerId: string; cardInstanceId?: string }
   | { type: 'LEAVE_SHOP' }
   | { type: 'CHOOSE_EVENT'; optionId: string; cardInstanceId?: string }
+  | { type: 'CHOOSE_REST'; option: 'heal' | 'upgrade'; cardInstanceId?: string }
   | { type: 'RETURN_TO_MENU' }
   | { type: 'DEBUG_SET_RESOURCE'; resourceId: string; amount: number }
   | { type: 'DEBUG_JUMP_NODE'; nodeId: string }
-  | { type: 'DEBUG_START_EVENT'; eventId: string };
+  | { type: 'DEBUG_START_EVENT'; eventId: string }
+  | { type: 'DEBUG_WIN_COMBAT' }
+  | { type: 'DEBUG_JUMP_FLOOR'; floor: number };
 
 export interface DomainEvent {
   type: string;

@@ -32,5 +32,42 @@
         "cost": 12
       }
     ]
+  },
+  {
+    "id": "character.hunter",
+    "nameKey": "character.hunter.name",
+    "descriptionKey": "character.hunter.description",
+    "resourceId": "serum",
+    "maxHealth": 60,
+    "startingDeck": [
+      "card.stab",
+      "card.stab",
+      "card.stab",
+      "card.stab",
+      "card.hunter-dodge",
+      "card.hunter-dodge",
+      "card.hunter-dodge",
+      "card.hunter-dodge",
+      "card.trap-setup",
+      "card.conceal"
+    ],
+    "startingCollectibleIds": [
+      "collectible.hunter-strap"
+    ],
+    "unlockCost": 0,
+    "metaUpgrades": [
+      {
+        "id": "meta.hunter.health-1",
+        "stat": "maxHealth",
+        "amount": 5,
+        "cost": 5
+      },
+      {
+        "id": "meta.hunter.serum-1",
+        "stat": "startingResource",
+        "amount": 1,
+        "cost": 12
+      }
+    ]
   }
 ]

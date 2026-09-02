@@ -57,5 +57,9 @@
   {
     "id": "collectible.cooling-patch", "nameKey": "collectible.cooling-patch.name", "descriptionKey": "collectible.cooling-patch.description", "kind": "positive", "rarity": "gold",
     "triggers": [{ "hook": "combatStart", "effects": [{ "effectId": "core.addStatus", "params": { "statusId": "status.clear", "stacks": 1 } }] }]
+  },
+  {
+    "id": "collectible.hunter-strap", "nameKey": "collectible.hunter-strap.name", "descriptionKey": "collectible.hunter-strap.description", "kind": "positive", "rarity": "blue",
+    "triggers": [{ "hook": "afterDamageBlocked", "effects": [{ "effectId": "core.addStatus", "params": { "statusId": "status.strong", "stacks": 1 } }] }]
   }
 ]

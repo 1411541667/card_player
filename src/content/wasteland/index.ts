@@ -15,7 +15,7 @@ import type { ContentPack } from '../../game/types';
 
 export const wastelandContentPack = {
   id: 'wasteland-first-run',
-  version: '2.0.0',
+  version: '2.1.0',
   locale: 'zh-CN',
   ruleSet: rules,
   characters,

@@ -6,7 +6,8 @@ export type NodeResolution =
   | { type: 'combat'; encounterId: string }
   | { type: 'shop' }
   | { type: 'event'; eventId: string }
-  | { type: 'reward'; rewardIds: string[] };
+  | { type: 'reward'; rewardIds: string[] }
+  | { type: 'rest' };
 
 export interface NodeHandlerContext {
   node: Readonly<MapNodeState>;
@@ -55,5 +56,6 @@ export function createCoreNodeHandlers(): NodeHandlerRegistry {
     .register('core.event', (context) => ({
       type: 'event',
       eventId: context.random.pick(`node:${context.node.id}:event`, context.definition.eventPool ?? []),
-    }));
+    }))
+    .register('core.rest', () => ({ type: 'rest' }));
 }

@@ -3,5 +3,6 @@
   { "id": "status.strong", "nameKey": "status.strong.name", "descriptionKey": "status.strong.description", "stacking": "stack" },
   { "id": "status.sharp", "nameKey": "status.sharp.name", "descriptionKey": "status.sharp.description", "stacking": "stack" },
   { "id": "status.clear", "nameKey": "status.clear.name", "descriptionKey": "status.clear.description", "stacking": "stack" },
-  { "id": "status.weak", "nameKey": "status.weak.name", "descriptionKey": "status.weak.description", "stacking": "stack" }
+  { "id": "status.weak", "nameKey": "status.weak.name", "descriptionKey": "status.weak.description", "stacking": "stack" },
+  { "id": "status.conceal", "nameKey": "status.conceal.name", "descriptionKey": "status.conceal.description", "stacking": "stack" }
 ]
