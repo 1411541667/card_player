@@ -291,6 +291,7 @@ export interface MapNodeState {
 export interface MapState {
   nodes: MapNodeState[];
   currentNodeId?: string;
+  drawings?: Record<string, 'red' | 'blue'>;
 }
 
 export interface RewardState {
@@ -401,7 +402,10 @@ export type GameCommand =
   | { type: 'DEBUG_JUMP_NODE'; nodeId: string }
   | { type: 'DEBUG_START_EVENT'; eventId: string }
   | { type: 'DEBUG_WIN_COMBAT' }
-  | { type: 'DEBUG_JUMP_FLOOR'; floor: number };
+  | { type: 'DEBUG_JUMP_FLOOR'; floor: number }
+  | { type: 'DRAW_MAP'; x: number; y: number; color: 'red' | 'blue' }
+  | { type: 'ERASE_MAP'; x: number; y: number }
+  | { type: 'CLEAR_MAP_DRAWING' };
 
 export interface DomainEvent {
   type: string;

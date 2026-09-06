@@ -119,6 +119,9 @@ kbd { border: 1px solid var(--line-strong); border-radius: 4px; padding: 0.1rem 
 
 .side-panel { top: 94px; left: 16px; width: min(290px, calc(100vw - 32px)); padding: 20px; border-radius: 12px; }
 .map-actions { position: absolute; z-index: 8; left: 18px; bottom: 18px; max-width: calc(100vw - 36px); padding: 14px; border: 1px solid var(--line); border-radius: 12px; background: rgba(12, 16, 23, 0.86); backdrop-filter: blur(12px); pointer-events: auto; }
+.map-tools { display: flex; gap: 8px; margin-top: 8px; }
+.map-tools button { width: 42px; height: 38px; padding: 0; font-size: 1.35rem; line-height: 1; }
+.map-tools .map-tool-active { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(224,180,98,.38), 0 0 18px rgba(224,180,98,.55); }
 .map-click-hint { color: var(--muted); font-size: .8rem; }
 .map-legend {
   position: fixed; z-index: 8; left: 20px; top: 50%; transform: translateY(-50%);
@@ -248,6 +251,7 @@ html[data-reduced-motion="true"] .transient-notice { animation: none; }
 .event-log { padding-left: 22px; }
 .event-log li { display: flex; justify-content: space-between; gap: 10px; margin: 5px 0; color: var(--muted); }
 .future-action-button { position: fixed; z-index: 25; right: 28px; bottom: 28px; width: 86px; height: 86px; border-radius: 50%; border: 2px solid var(--accent); background: rgba(20, 28, 38, .86); box-shadow: 0 8px 30px rgba(0,0,0,.45); }
+.global-settings-button { position: fixed; z-index: 35; top: 18px; right: 18px; padding: .65rem 1rem; border: 1px solid var(--line-strong); border-radius: 8px; background: rgba(12, 16, 23, .9); color: var(--text); box-shadow: var(--shadow); }
 .card-change-animation { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; pointer-events: none; background: rgba(7, 10, 15, .35); animation: card-change-in 1.15s ease both; }
 .card-change-animation > div { display: grid; gap: 8px; place-items: center; min-width: 220px; padding: 28px; border: 2px solid var(--accent); border-radius: 12px; background: #121a22; box-shadow: 0 0 50px rgba(224, 180, 98, .45); }
 .card-change-animation span { font-size: 2.4rem; color: var(--accent); animation: card-spin 1.15s ease both; }

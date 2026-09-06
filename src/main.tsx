@@ -55,5 +55,6 @@ render(<App
   startupWarning={startupWarning}
   accountStore={accountStore}
   account={account}
+  bridge={bridge}
   setGameVolume={(volume) => { phaserGame.sound.volume = volume; }}
 />, document.getElementById('ui-root')!);

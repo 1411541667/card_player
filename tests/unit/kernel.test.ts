@@ -126,8 +126,8 @@ describe('Wasteland GameKernel', () => {
     startReadyRun(second, 'same-seed');
     expect(first.getSnapshot().run!.map).toEqual(second.getSnapshot().run!.map);
     const nodes = first.getSnapshot().run!.map.nodes;
-    expect(nodes.length).toBeGreaterThanOrEqual(48);
-    expect(nodes.length).toBeLessThanOrEqual(60);
+    expect(nodes.length).toBeGreaterThanOrEqual(60);
+    expect(nodes.length).toBeLessThanOrEqual(72);
     expect(nodes.filter((node) => node.handlerId === 'core.boss')).toHaveLength(1);
     expect(nodes.filter((node) => node.handlerId === 'core.shop').length).toBeGreaterThanOrEqual(4);
     expect(nodes.filter((node) => node.handlerId === 'core.shop').length).toBeLessThanOrEqual(5);

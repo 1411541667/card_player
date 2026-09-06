@@ -3,6 +3,7 @@ import type { DomainEvent, GameCommand, GameSnapshot } from '../../game/types';
 export type SceneSubscriber = (snapshot: GameSnapshot, events: readonly DomainEvent[]) => void;
 
 export class SceneBridge {
+  private mapTool: 'draw' | 'erase' = 'draw';
   private snapshot: GameSnapshot = { phase: 'menu', revision: 0 };
   private readonly subscribers = new Set<SceneSubscriber>();
   private commandHandler?: (command: GameCommand) => void;
@@ -14,6 +15,9 @@ export class SceneBridge {
   dispatch(command: GameCommand): void {
     this.commandHandler?.(command);
   }
+
+  setMapTool(tool: 'draw' | 'erase'): void { this.mapTool = tool; }
+  getMapTool(): 'draw' | 'erase' { return this.mapTool; }
 
   publish(snapshot: GameSnapshot, events: readonly DomainEvent[]): void {
     this.snapshot = snapshot;

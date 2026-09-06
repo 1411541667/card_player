@@ -103,8 +103,8 @@
   "rewardChoiceCount": 3,
   "map": {
     "floorCount": 4,
-    "minNodes": 48,
-    "maxNodes": 60,
+    "minNodes": 60,
+    "maxNodes": 72,
     "rows": 13,
     "maxNodesPerRow": 5,
     "shopCount": {
@@ -112,13 +112,13 @@
       "max": 5
     },
     "rewardCount": {
-      "min": 8,
-      "max": 10
+      "min": 9,
+      "max": 11
     },
     "eliteCount": 5,
     "restCount": {
-      "min": 6,
-      "max": 7
+      "min": 7,
+      "max": 8
     },
     "remainingWeights": {
       "combat": 0.4,

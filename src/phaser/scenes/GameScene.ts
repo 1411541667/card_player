@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import type { ContentRegistry } from '../../game/content';
-import type { DomainEvent, GameSnapshot } from '../../game/types';
+import type { DomainEvent, GameSnapshot, MapNodeState } from '../../game/types';
 import type { SceneBridge } from '../adapters/sceneBridge';
 import combatSvg from '../../content/wasteland/assets/icon_map/combat.svg?raw';
 import eliteSvg from '../../content/wasteland/assets/icon_map/elite.svg?raw';
@@ -50,6 +50,12 @@ function mapWorldWidth(maxLayer: number, viewportWidth: number): number {
   return mapSideMargin(viewportWidth) * 2 + contentWidth;
 }
 
+function nodeJitter(id: string, axis: number): number {
+  let hash = axis * 97;
+  for (let index = 0; index < id.length; index += 1) hash = (hash * 31 + id.charCodeAt(index)) | 0;
+  return ((Math.abs(hash) % 200) / 100 - 1);
+}
+
 export class GameScene extends Phaser.Scene {
   private layer?: Phaser.GameObjects.Container;
   private snapshot: GameSnapshot = { phase: 'menu', revision: 0 };
@@ -58,6 +64,8 @@ export class GameScene extends Phaser.Scene {
   private mapDragStartX = 0;
   private mapDragScrollX = 0;
   private mapDragMoved = false;
+  private lastDrawingPoint?: { x: number; y: number };
+  private lastDrawingCell?: string;
 
   constructor(private readonly bridge: SceneBridge, private readonly content: ContentRegistry) {
     super({ key: 'GameScene' });
@@ -81,6 +89,7 @@ export class GameScene extends Phaser.Scene {
 
   create(): void {
     this.cameras.main.setBackgroundColor('#0d1118');
+    this.game.canvas.addEventListener('contextmenu', (event) => event.preventDefault());
     this.unsubscribe = this.bridge.subscribe((snapshot, events) => {
       this.snapshot = snapshot;
       this.renderSnapshot();
@@ -95,16 +104,60 @@ export class GameScene extends Phaser.Scene {
     });
     this.input.on(Phaser.Input.Events.POINTER_DOWN, (pointer: Phaser.Input.Pointer) => {
       if (this.snapshot.phase !== 'map') return;
+      if (pointer.button === 2) {
+        this.mapDragging = false;
+        this.lastDrawingPoint = undefined; this.lastDrawingCell = undefined; this.drawAt(pointer);
+        return;
+      }
+      if (this.bridge.getMapTool() === 'erase') {
+        this.mapDragging = false;
+        this.lastDrawingPoint = undefined; this.lastDrawingCell = undefined;
+        this.eraseAt(pointer);
+        return;
+      }
       this.mapDragging = true; this.mapDragMoved = false; this.mapDragStartX = pointer.x; this.mapDragScrollX = this.cameras.main.scrollX;
     });
     this.input.on(Phaser.Input.Events.POINTER_MOVE, (pointer: Phaser.Input.Pointer) => {
-      if (!this.mapDragging || !pointer.isDown || this.snapshot.phase !== 'map' || !this.snapshot.run) return;
+      if (this.snapshot.phase !== 'map' || !this.snapshot.run) return;
+      if (pointer.isDown && pointer.rightButtonDown()) { this.drawAt(pointer); return; }
+      if (pointer.isDown && this.bridge.getMapTool() === 'erase') { this.eraseAt(pointer); return; }
+      if (!this.mapDragging || !pointer.isDown) return;
       if (Math.abs(pointer.x - this.mapDragStartX) > 8) this.mapDragMoved = true;
       const maxLayer = Math.max(...this.snapshot.run.map.nodes.map((node) => node.layer), 1);
       this.cameras.main.scrollX = Phaser.Math.Clamp(this.mapDragScrollX - (pointer.x - this.mapDragStartX), 0, Math.max(0, mapWorldWidth(maxLayer, this.scale.width) - this.scale.width));
     });
-    this.input.on(Phaser.Input.Events.POINTER_UP, () => { this.mapDragging = false; });
+    this.input.on(Phaser.Input.Events.POINTER_UP, () => { this.mapDragging = false; this.lastDrawingPoint = undefined; this.lastDrawingCell = undefined; });
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.unsubscribe?.());
+  }
+
+  private drawAt(pointer: Phaser.Input.Pointer): void {
+    const run = this.snapshot.run;
+    if (!run) return;
+    const x = pointer.worldX; const y = pointer.worldY;
+    const from = this.lastDrawingPoint ?? { x, y };
+    const distance = Phaser.Math.Distance.Between(from.x, from.y, x, y);
+    const steps = Math.max(1, Math.ceil(distance / 2));
+    for (let index = 1; index <= steps; index += 1) {
+      const px = Phaser.Math.Linear(from.x, x, index / steps);
+      const py = Phaser.Math.Linear(from.y, y, index / steps);
+      const cell = `${Math.round(px / 3) * 3},${Math.round(py / 3) * 3}`;
+      if (cell === this.lastDrawingCell) continue;
+      if (this.lastDrawingCell) {
+        const [previousX, previousY] = this.lastDrawingCell.split(',').map(Number);
+        const [currentX, currentY] = cell.split(',').map(Number);
+        if (previousX !== currentX && previousY !== currentY) {
+          this.bridge.dispatch({ type: 'DRAW_MAP', x: currentX, y: previousY, color: run.player.characterId === 'character.hunter' ? 'blue' : 'red' });
+          this.bridge.dispatch({ type: 'DRAW_MAP', x: previousX, y: currentY, color: run.player.characterId === 'character.hunter' ? 'blue' : 'red' });
+        }
+      }
+      this.lastDrawingCell = cell;
+      this.bridge.dispatch({ type: 'DRAW_MAP', x: px, y: py, color: run.player.characterId === 'character.hunter' ? 'blue' : 'red' });
+    }
+    this.lastDrawingPoint = { x, y };
+  }
+
+  private eraseAt(pointer: Phaser.Input.Pointer): void {
+    this.bridge.dispatch({ type: 'ERASE_MAP', x: pointer.worldX, y: pointer.worldY });
   }
 
   private renderSnapshot(): void {
@@ -156,8 +209,8 @@ export class GameScene extends Phaser.Scene {
     const maxScroll = Math.max(0, worldWidth - width);
     this.cameras.main.scrollX = Phaser.Math.Clamp(this.cameras.main.scrollX, 0, maxScroll);
     const position = (node: { layer: number; column: number }) => ({
-      x: layoutMargin + (node.layer / Math.max(1, maxLayer)) * contentWidth,
-      y: compact ? height / 2 : mapTop + (node.column / Math.max(1, maxColumn)) * regularContentHeight,
+      x: layoutMargin + (node.layer / Math.max(1, maxLayer)) * contentWidth + (compact ? 0 : nodeJitter((node as MapNodeState).id, 1) * 14),
+      y: compact ? height / 2 : mapTop + (node.column / Math.max(1, maxColumn)) * regularContentHeight + nodeJitter((node as MapNodeState).id, 2) * 10,
     });
 
     // Brown panel that holds the node map, so markers stand out against the dark backdrop.
@@ -165,11 +218,30 @@ export class GameScene extends Phaser.Scene {
     const panelY = compact ? Math.round((height - panelHeight) / 2) : mapTop - pad;
     const panelWidth = contentWidth + pad * 2;
     const panel = this.add.graphics();
-    panel.fillStyle(0x6b4c2f, 1).fillRoundedRect(panelX, panelY, panelWidth, panelHeight, 18);
-    panel.fillStyle(0x543a24, 0.9).fillRoundedRect(panelX, panelY + panelHeight - 34, panelWidth, 34, 18);
+    panel.fillGradientStyle(0x765536, 0x65472f, 0x4d3525, 0x5b3f29, 1).fillRoundedRect(panelX, panelY, panelWidth, panelHeight, 18);
+    panel.fillStyle(0x543a24, 0.88).fillRoundedRect(panelX, panelY + panelHeight - 34, panelWidth, 34, 18);
     panel.lineStyle(2, 0xcaa46a, 0.9).strokeRoundedRect(panelX, panelY, panelWidth, panelHeight, 18);
     panel.lineStyle(1, 0x2a1d10, 0.9).strokeRoundedRect(panelX + 3, panelY + 3, panelWidth - 6, panelHeight - 6, 16);
     this.layer?.add(panel);
+
+    // Subtle paper grain and contour lines give the route a hand-drawn map feel.
+    const terrain = this.add.graphics();
+    for (let index = 0; index < 72; index += 1) {
+      const tx = panelX + 18 + ((index * 137) % Math.max(1, panelWidth - 36));
+      const ty = panelY + 20 + ((index * 83) % Math.max(1, panelHeight - 52));
+      terrain.fillStyle(index % 2 === 0 ? 0xd4ad78 : 0x2b1d14, 0.07).fillCircle(tx, ty, 1 + (index % 3));
+    }
+    for (let line = 0; line < 7; line += 1) {
+      const baseY = panelY + 50 + line * Math.max(32, panelHeight / 9);
+      terrain.lineStyle(1, 0xd3ae7a, 0.1);
+      const points: Array<{ x: number; y: number }> = [];
+      for (let step = 0; step <= 12; step += 1) {
+        const px = panelX + 12 + (step / 12) * Math.max(1, panelWidth - 24);
+        points.push({ x: px, y: baseY + Math.sin(step * 1.3 + line) * 8 + Math.cos(step * .55) * 3 });
+      }
+      for (let step = 1; step < points.length; step += 1) terrain.lineBetween(points[step - 1].x, points[step - 1].y, points[step].x, points[step].y);
+    }
+    this.layer?.add(terrain);
 
     const graphics = this.add.graphics();
     for (const node of map.nodes) {
@@ -178,7 +250,7 @@ export class GameScene extends Phaser.Scene {
         const target = map.nodes.find((candidate) => candidate.id === connectionId);
         if (target) {
           const to = position(target);
-          this.dashedLine(graphics, from.x, from.y, to.x, to.y, 0x9c8a6b, node.visited ? 0.85 : 0.55);
+          this.dashedCurve(graphics, from.x, from.y, to.x, to.y, nodeJitter(node.id, 3) * 24, 0x9c8a6b, node.visited ? 0.85 : 0.55);
         }
       }
     }
@@ -192,6 +264,7 @@ export class GameScene extends Phaser.Scene {
       const dimmed = node.visited ? 0.62 : 0.5;
 
       // Base marker: always drawn, so every node stays visible even if a texture is missing.
+      graphics.fillStyle(0x17100b, 0.35).fillCircle(point.x + 3, point.y + 4, radius + 5);
       graphics.fillStyle(baseColor, node.available ? 0.95 : dimmed).fillCircle(point.x, point.y, radius + 4);
       graphics.lineStyle(2, 0x14100a, 0.9).strokeCircle(point.x, point.y, radius + 4);
       if (node.available && !node.visited) {
@@ -221,16 +294,26 @@ export class GameScene extends Phaser.Scene {
       }
       this.layer?.add(zone);
     }
+
+    // Draw annotations last so player markings remain visible above node icons and hit areas.
+    const drawingGraphics = this.add.graphics();
+    for (const [key, color] of Object.entries(map.drawings ?? {})) {
+      const [x, y] = key.split(',').map(Number);
+      drawingGraphics.fillStyle(color === 'blue' ? 0x4d91e8 : 0xe35a55, 0.95).fillRect(x - 1.5, y - 1.5, 3, 3);
+    }
+    this.layer?.add(drawingGraphics);
   }
 
-  private dashedLine(graphics: Phaser.GameObjects.Graphics, x1: number, y1: number, x2: number, y2: number, color: number, alpha: number): void {
-    const distance = Phaser.Math.Distance.Between(x1, y1, x2, y2);
-    const segments = Math.max(1, Math.floor(distance / 14));
+  private dashedCurve(graphics: Phaser.GameObjects.Graphics, x1: number, y1: number, x2: number, y2: number, bend: number, color: number, alpha: number): void {
+    const midX = (x1 + x2) / 2; const midY = (y1 + y2) / 2;
+    const dx = x2 - x1; const dy = y2 - y1; const length = Math.max(1, Math.hypot(dx, dy));
+    const controlX = midX - (dy / length) * bend; const controlY = midY + (dx / length) * bend;
+    const steps = Math.max(8, Math.floor(length / 10));
     graphics.lineStyle(2, color, alpha);
-    for (let index = 0; index < segments; index += 2) {
-      const start = index / segments;
-      const end = Math.min(1, (index + 1) / segments);
-      graphics.lineBetween(Phaser.Math.Linear(x1, x2, start), Phaser.Math.Linear(y1, y2, start), Phaser.Math.Linear(x1, x2, end), Phaser.Math.Linear(y1, y2, end));
+    for (let index = 0; index < steps; index += 2) {
+      const a0 = index / steps; const a1 = Math.min(1, (index + 1) / steps);
+      const point = (t: number) => ({ x: (1 - t) ** 2 * x1 + 2 * (1 - t) * t * controlX + t ** 2 * x2, y: (1 - t) ** 2 * y1 + 2 * (1 - t) * t * controlY + t ** 2 * y2 });
+      const p0 = point(a0); const p1 = point(a1); graphics.lineBetween(p0.x, p0.y, p1.x, p1.y);
     }
   }
 

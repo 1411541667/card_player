@@ -140,6 +140,9 @@ export class GameKernel {
       case 'DEBUG_START_EVENT': this.debugStartEvent(command.eventId); break;
       case 'DEBUG_WIN_COMBAT': this.debugWinCombat(); break;
       case 'DEBUG_JUMP_FLOOR': this.debugJumpFloor(command.floor); break;
+      case 'DRAW_MAP': this.drawMap(command.x, command.y, command.color); break;
+      case 'ERASE_MAP': this.eraseMap(command.x, command.y); break;
+      case 'CLEAR_MAP_DRAWING': this.clearMapDrawing(); break;
       default: command satisfies never;
     }
   }
@@ -184,7 +187,7 @@ export class GameKernel {
       phase: 'boon-select',
       player,
       deck: { cards: deck },
-      map: { nodes: [] },
+      map: { nodes: [], drawings: {} },
       metrics: { battlesWon: 0, bossesDefeated: 0, nodesVisited: 0, floorsCleared: 0, damageTaken: 0, battlesStarted: 0 },
       setup: {
         boonOffers: this.random.shuffle('setup:boons', rules.startingBoonIds).slice(0, 3),
@@ -274,7 +277,7 @@ export class GameKernel {
           visited: false, available: layer === 0, iconKey: this.mapIconKey(handlerId, floor),
         } satisfies MapNodeState;
       });
-      return { nodes: fixedNodes };
+      return { nodes: fixedNodes, drawings: {} };
     }
 
     const targetCount = this.random.integer(`map:${floor}:count`, minNodes, maxNodes);
@@ -452,7 +455,7 @@ export class GameKernel {
         if (!target || target.layer !== node.layer + 1) throw new Error(`Map connection must target the next layer: ${node.id} -> ${connectionId}`);
       }
     }
-    return { nodes };
+    return { nodes, drawings: {} };
   }
 
   private mapIconKey(handlerId: string, floor: number): string {
@@ -1099,6 +1102,35 @@ export class GameKernel {
     node.available = true; node.visited = false;
     this.enterNode(nodeId);
     this.emit('debug.jumped', { nodeId });
+  }
+
+  private drawMap(x: number, y: number, color: 'red' | 'blue'): void {
+    const run = this.requirePhase('map');
+    if (!Number.isFinite(x) || !Number.isFinite(y)) throw new Error('无效的绘图坐标。');
+    const key = `${Math.round(x / 3) * 3},${Math.round(y / 3) * 3}`;
+    run.map.drawings ??= {};
+    if (Object.keys(run.map.drawings).length >= 12000 && !run.map.drawings[key]) return;
+    run.map.drawings[key] = color;
+    this.emit('map.drawingChanged', { action: 'draw', key });
+  }
+
+  private eraseMap(x: number, y: number): void {
+    const run = this.requirePhase('map');
+    const drawings = run.map.drawings ?? {};
+    const centerX = Math.round(x / 3) * 3;
+    const centerY = Math.round(y / 3) * 3;
+    for (const key of Object.keys(drawings)) {
+      const [px, py] = key.split(',').map(Number);
+      if (Math.hypot(px - centerX, py - centerY) <= 32) delete drawings[key];
+    }
+    run.map.drawings = drawings;
+    this.emit('map.drawingChanged', { action: 'erase' });
+  }
+
+  private clearMapDrawing(): void {
+    const run = this.requirePhase('map');
+    run.map.drawings = {};
+    this.emit('map.drawingChanged', { action: 'clear' });
   }
 
   private debugStartEvent(eventId: string): void {

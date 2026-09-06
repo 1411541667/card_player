@@ -7,6 +7,7 @@ import { createInitialMetaProgress, type MetaProgressStore } from '../game/meta'
 import type { BrowserSaveStore } from '../game/save';
 import type { GameSettings, SettingsStore } from '../game/settings';
 import type { AccountStore, LocalAccount } from '../game/accounts';
+import type { SceneBridge } from '../phaser/adapters/sceneBridge';
 import type { CardDefinition, CardInstance, GameCommand, GameSnapshot, MetaProgressV2, RunSaveV2, ShopOfferState } from '../game/types';
 
 interface AppProps {
@@ -19,6 +20,7 @@ interface AppProps {
   startupWarning?: string;
   accountStore: AccountStore;
   account: LocalAccount;
+  bridge: SceneBridge;
   setGameVolume?: (volume: number) => void;
 }
 
@@ -72,7 +74,7 @@ const boonCopy: Record<string, { name: string; description: string }> = {
   'boon.remove-three': { name: '轻装上路', description: '自行从初始牌组中删除3张牌。' },
 };
 
-export function App({ kernel, content, saveStore, metaStore, settingsStore, initialSave, startupWarning, accountStore, account: initialAccount, setGameVolume }: AppProps) {
+export function App({ kernel, content, saveStore, metaStore, settingsStore, initialSave, startupWarning, accountStore, account: initialAccount, bridge, setGameVolume }: AppProps) {
   const [snapshot, setSnapshot] = useState<GameSnapshot>(kernel.getSnapshot());
   const [error, setError] = useState(startupWarning ?? '');
   const [debugOpen, setDebugOpen] = useState(false);
@@ -245,11 +247,13 @@ export function App({ kernel, content, saveStore, metaStore, settingsStore, init
       {snapshot.phase === 'menu' && menuView === 'stats' && <StatsPanel content={content} meta={meta} back={() => setMenuView('main')} />}
       {snapshot.phase === 'menu' && menuView === 'accounts' && <AccountPanel accounts={accountStore.list()} currentId={account.id} onSwitch={switchAccount} onCreate={createAccount} onRemove={removeAccount} back={() => setMenuView('main')} />}
 
+      {run && !showHud && <button class="global-settings-button" data-testid="global-settings" onClick={() => { setInGameSettings(false); setExitOpen(true); }}>设置</button>}
+
       {snapshot.phase === 'character-select' && <CharacterSelect content={content} meta={meta} dispatch={dispatch} />}
       {snapshot.phase === 'boon-select' && run?.setup && <BoonSelect boonIds={run.setup.boonOffers} content={content} dispatch={dispatch} />}
       {snapshot.phase === 'boon-remove' && run?.setup && <StartingCardRemoval run={run} content={content} dispatch={dispatch} />}
       {snapshot.phase === 'theme-select' && <ThemeSelect dispatch={dispatch} />}
-      {snapshot.phase === 'map' && run && <MapPanel snapshot={snapshot} />}
+      {snapshot.phase === 'map' && run && <MapPanel snapshot={snapshot} dispatch={dispatch} bridge={bridge} />}
       {snapshot.phase === 'map' && (
         <aside class="map-legend" data-testid="map-legend" aria-label="地图图例">
           <p class="eyebrow">MAP LEGEND</p>
@@ -364,9 +368,12 @@ function ThemeSelect({ dispatch }: { dispatch: (command: GameCommand) => void })
   </div></section>;
 }
 
-function MapPanel({ snapshot }: { snapshot: GameSnapshot }) {
+function MapPanel({ snapshot, dispatch, bridge }: { snapshot: GameSnapshot; dispatch: (command: GameCommand) => void; bridge: SceneBridge }) {
   const run = snapshot.run!;
-  return <aside class="map-actions" data-testid="map-panel"><p class="eyebrow">FLOOR {run.floor} / {run.totalFloors}</p><span class="map-click-hint">点击高亮图标移动 · 滚轮滑动查看路线</span></aside>;
+  const color = run.player.characterId === 'character.hunter' ? 'blue' : 'red';
+  const [tool, setTool] = useState<'draw' | 'erase'>(bridge.getMapTool());
+  const chooseTool = (next: 'draw' | 'erase') => { setTool(next); bridge.setMapTool(next); };
+  return <aside class="map-actions" data-testid="map-panel"><p class="eyebrow">FLOOR {run.floor} / {run.totalFloors}</p><span class="map-click-hint">右键长按涂画 · 左键拖动地图</span><div class="map-tools"><button class={tool === 'draw' ? 'map-tool-active' : ''} aria-label={`画笔（${color === 'blue' ? '蓝色' : '红色'}）`} title={`画笔（${color === 'blue' ? '蓝色' : '红色'}）`} onClick={() => chooseTool('draw')}>➤</button><button class={tool === 'erase' ? 'map-tool-active' : ''} aria-label="橡皮擦" title="橡皮擦" onClick={() => chooseTool('erase')}>▱</button><button aria-label="清除当前层笔迹" title="清除当前层笔迹" onClick={() => dispatch({ type: 'CLEAR_MAP_DRAWING' })}>▣</button></div></aside>;
 }
 
 function RunInfoPanel({ view, snapshot, content, close }: { view: InfoView; snapshot: GameSnapshot; content: ContentRegistry; close: () => void }) {
