@@ -409,43 +409,59 @@ export class GameKernel {
     for (let layer = 0; layer < routeRows; layer += 1) {
       const current = nodes.filter((node) => node.layer === layer);
       const next = nodes.filter((node) => node.layer === layer + 1);
-      for (const node of current) {
-        if (next.length === 1) {
-          node.connections = [next[0].id];
-        } else {
-          const sorted = [...next].sort((left, right) => Math.abs(left.column - node.column) - Math.abs(right.column - node.column));
-          node.connections = [sorted[0].id];
-          if (sorted.length > 1 && this.random.next(`map:${floor}:branch:${node.id}`) > 0.35) {
-            node.connections.push(sorted[1].id);
-          }
-        }
-      }
-      for (const nextNode of next) {
-        if (!current.some((node) => node.connections.includes(nextNode.id))) {
-          const source = [...current].sort((left, right) => Math.abs(left.column - nextNode.column) - Math.abs(right.column - nextNode.column))[0];
-          source.connections.push(nextNode.id);
-        }
-      }
+      const orderedCurrent = [...current].sort((left, right) => left.column - right.column);
+      const orderedNext = [...next].sort((left, right) => left.column - right.column);
+      // Build a monotone bipartite mapping. Both endpoints of an edge are ordered,
+      // so no two links between adjacent layers can cross or overlap.
+      orderedCurrent.forEach((node, index) => {
+        const targetIndex = orderedCurrent.length <= 1 ? 0 : Math.round(index * (orderedNext.length - 1) / (orderedCurrent.length - 1));
+        node.connections = [orderedNext[targetIndex].id];
+      });
+      orderedNext.forEach((target, index) => {
+        const sourceIndex = orderedNext.length <= 1 ? 0 : Math.round(index * (orderedCurrent.length - 1) / (orderedNext.length - 1));
+        const source = orderedCurrent[sourceIndex];
+        if (!source.connections.includes(target.id)) source.connections.push(target.id);
+      });
     }
 
-    // Force the two guaranteed spines to stay connected; their routes continue through the
-    // pre-boss rest row (all rest nodes) into the boss battle.
-    // Keep guaranteed spine links routed through every intermediate row. The spine
-    // markers are spread across the board for content guarantees, but a map edge may
-    // only ever connect the immediately following layer.
+    // Re-assert authored guaranteed routes, then remove only optional edges that
+    // would cross them. Mandatory routes are kept in their original order.
+    const mandatoryEdges = new Set<string>();
     for (const spine of [spineA, spineB]) {
       for (let index = 0; index < spine.length - 1; index += 1) {
         let from = nodes.find((node) => node.layer === spine[index].layer && node.column === spine[index].column);
         const destination = nodes.find((node) => node.layer === spine[index + 1].layer && node.column === spine[index + 1].column);
         if (!from || !destination) continue;
         for (let layer = from.layer + 1; layer <= destination.layer; layer += 1) {
-          const to = layer === destination.layer
-            ? destination
-            : [...nodes].filter((node) => node.layer === layer)
-              .sort((left, right) => Math.abs(left.column - from!.column) - Math.abs(right.column - from!.column))[0];
+          const to = layer === destination.layer ? destination : [...nodes].filter((node) => node.layer === layer).sort((left, right) => Math.abs(left.column - from!.column) - Math.abs(right.column - from!.column))[0];
           if (!to) break;
           if (!from.connections.includes(to.id)) from.connections.push(to.id);
+          mandatoryEdges.add(`${from.id}->${to.id}`);
           from = to;
+        }
+      }
+    }
+    const crosses = (aFrom: MapNodeState, aTo: MapNodeState, bFrom: MapNodeState, bTo: MapNodeState) =>
+      (aFrom.column < bFrom.column && aTo.column > bTo.column) || (aFrom.column > bFrom.column && aTo.column < bTo.column);
+    for (let layer = 0; layer < routeRows; layer += 1) {
+      const kept: Array<{ from: MapNodeState; to: MapNodeState; mandatory: boolean }> = [];
+      for (const from of nodes.filter((node) => node.layer === layer)) {
+        for (const connectionId of [...from.connections]) {
+          const to = nodes.find((node) => node.id === connectionId);
+          if (!to) continue;
+          const mandatory = mandatoryEdges.has(`${from.id}->${to.id}`);
+          const conflicts = kept.filter((edge) => crosses(from, to, edge.from, edge.to));
+          if (conflicts.length === 0) kept.push({ from, to, mandatory });
+          else if (mandatory) {
+            conflicts.filter((edge) => !edge.mandatory).forEach((edge) => {
+              const incoming = nodes.filter((candidate) => candidate.connections.includes(edge.to.id)).length;
+              if (edge.from.connections.length > 1 && incoming > 1) edge.from.connections = edge.from.connections.filter((id) => id !== edge.to.id);
+            });
+            kept.push({ from, to, mandatory });
+          } else if (kept.some((edge) => edge.mandatory && crosses(from, to, edge.from, edge.to))) {
+            const incoming = nodes.filter((candidate) => candidate.connections.includes(connectionId)).length;
+            if (from.connections.length > 1 && incoming > 1) from.connections = from.connections.filter((id) => id !== connectionId);
+          }
         }
       }
     }

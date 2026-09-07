@@ -152,6 +152,24 @@ describe('Wasteland GameKernel', () => {
     }
   });
 
+  it('generates adjacent-layer map edges without crossing', () => {
+    const kernel = createKernel();
+    startReadyRun(kernel, 'non-crossing');
+    const nodes = kernel.getSnapshot().run!.map.nodes;
+    for (const node of nodes) {
+      for (const connectionId of node.connections) {
+        const target = nodes.find((candidate) => candidate.id === connectionId)!;
+        for (const other of nodes.filter((candidate) => candidate.layer === node.layer)) {
+          for (const otherId of other.connections) {
+            const otherTarget = nodes.find((candidate) => candidate.id === otherId)!;
+            if (node.id === other.id || target.id === otherTarget.id) continue;
+            expect((node.column - other.column) * (target.column - otherTarget.column)).toBeGreaterThanOrEqual(0);
+          }
+        }
+      }
+    }
+  });
+
   it('starts the scavenger with the confirmed health, currency, collectible, and hand limit', () => {
     const kernel = createKernel();
     startReadyRun(kernel, 'confirmed-start');
