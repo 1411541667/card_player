@@ -1,0 +1,449 @@
+[
+  {
+    "id": "card.smash",
+    "nameKey": "card.smash.name",
+    "descriptionKey": "card.smash.description",
+    "cost": {
+      "resourceId": "action",
+      "amount": 1
+    },
+    "target": "enemy",
+    "type": "attack",
+    "rarity": "gray",
+    "playDestination": "discard",
+    "tags": [
+      "attack"
+    ],
+    "effects": [
+      {
+        "effectId": "core.damage",
+        "params": {
+          "amount": 7
+        }
+      }
+    ],
+    "upgrades": [
+      {
+        "descriptionKey": "card.smash.upgrade",
+        "effects": [
+          {
+            "effectId": "core.damage",
+            "params": {
+              "amount": 10
+            }
+          }
+        ]
+      },
+      {
+        "descriptionKey": "card.smash.upgrade-2",
+        "effects": [
+          {
+            "effectId": "core.damage",
+            "params": {
+              "amount": 14
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "card.dodge",
+    "nameKey": "card.dodge.name",
+    "descriptionKey": "card.dodge.description",
+    "cost": {
+      "resourceId": "action",
+      "amount": 1
+    },
+    "target": "self",
+    "type": "defense",
+    "rarity": "gray",
+    "playDestination": "discard",
+    "tags": [
+      "defense"
+    ],
+    "effects": [
+      {
+        "effectId": "core.block",
+        "params": {
+          "amount": 6
+        }
+      }
+    ],
+    "upgrades": [
+      {
+        "descriptionKey": "card.dodge.upgrade",
+        "effects": [
+          {
+            "effectId": "core.block",
+            "params": {
+              "amount": 9
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "card.call-ally",
+    "nameKey": "card.call-ally.name",
+    "descriptionKey": "card.call-ally.description",
+    "cost": {
+      "resourceId": "action",
+      "amount": 2
+    },
+    "target": "none",
+    "type": "skill",
+    "rarity": "gray",
+    "playDestination": "discard",
+    "tags": [
+      "skill"
+    ],
+    "effects": [
+      {
+        "effectId": "core.draw",
+        "params": {
+          "amount": 2
+        }
+      }
+    ],
+    "upgrades": [
+      {
+        "descriptionKey": "card.call-ally.upgrade",
+        "cost": {
+          "resourceId": "action",
+          "amount": 1
+        },
+        "effects": [
+          {
+            "effectId": "core.draw",
+            "params": {
+              "amount": 2
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "card.anger",
+    "nameKey": "card.anger.name",
+    "descriptionKey": "card.anger.description",
+    "cost": {
+      "resourceId": "action",
+      "amount": 3
+    },
+    "target": "self",
+    "type": "ability",
+    "rarity": "gray",
+    "playDestination": "exhaust",
+    "tags": [
+      "ability"
+    ],
+    "effects": [
+      {
+        "effectId": "core.addStatus",
+        "params": {
+          "statusId": "status.anger",
+          "stacks": 1
+        }
+      }
+    ],
+    "upgrades": [
+      {
+        "descriptionKey": "card.anger.upgrade",
+        "cost": {
+          "resourceId": "action",
+          "amount": 2
+        },
+        "effects": [
+          {
+            "effectId": "core.addStatus",
+            "params": {
+              "statusId": "status.anger",
+              "stacks": 1
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "card.throw-rock",
+    "nameKey": "card.throw-rock.name",
+    "descriptionKey": "card.throw-rock.description",
+    "cost": {
+      "resourceId": "action",
+      "amount": 1
+    },
+    "target": "enemy",
+    "type": "attack",
+    "rarity": "gray",
+    "playDestination": "discard",
+    "tags": [
+      "attack"
+    ],
+    "effects": [
+      {
+        "effectId": "core.damage",
+        "params": {
+          "amount": 10
+        }
+      }
+    ],
+    "upgrades": [
+      {
+        "descriptionKey": "card.throw-rock.upgrade",
+        "effects": [
+          {
+            "effectId": "core.damage",
+            "params": {
+              "amount": 14
+            }
+          }
+        ]
+      },
+      {
+        "descriptionKey": "card.throw-rock.upgrade-2",
+        "effects": [
+          {
+            "effectId": "core.damage",
+            "params": {
+              "amount": 20
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "card.sand-toss",
+    "nameKey": "card.sand-toss.name",
+    "descriptionKey": "card.sand-toss.description",
+    "cost": {
+      "resourceId": "action",
+      "amount": 1
+    },
+    "target": "enemy",
+    "type": "skill",
+    "rarity": "gray",
+    "playDestination": "discard",
+    "tags": [
+      "skill"
+    ],
+    "effects": [
+      {
+        "effectId": "core.damage",
+        "params": {
+          "amount": 3
+        }
+      },
+      {
+        "effectId": "core.addStatus",
+        "params": {
+          "statusId": "status.weak",
+          "stacks": 1,
+          "durationFromStacks": true
+        }
+      }
+    ],
+    "upgrades": [
+      {
+        "descriptionKey": "card.sand-toss.upgrade",
+        "effects": [
+          {
+            "effectId": "core.damage",
+            "params": {
+              "amount": 3
+            }
+          },
+          {
+            "effectId": "core.addStatus",
+            "params": {
+              "statusId": "status.weak",
+              "stacks": 2,
+              "durationFromStacks": true
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "card.stab",
+    "nameKey": "card.stab.name",
+    "descriptionKey": "card.stab.description",
+    "cost": {
+      "resourceId": "serum",
+      "amount": 1
+    },
+    "target": "enemy",
+    "type": "attack",
+    "rarity": "gray",
+    "playDestination": "discard",
+    "tags": [
+      "attack"
+    ],
+    "effects": [
+      {
+        "effectId": "core.damage",
+        "params": {
+          "amount": 7
+        }
+      }
+    ],
+    "upgrades": [
+      {
+        "descriptionKey": "card.stab.upgrade",
+        "effects": [
+          {
+            "effectId": "core.damage",
+            "params": {
+              "amount": 10
+            }
+          }
+        ]
+      },
+      {
+        "descriptionKey": "card.stab.upgrade-2",
+        "effects": [
+          {
+            "effectId": "core.damage",
+            "params": {
+              "amount": 14
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "card.hunter-dodge",
+    "nameKey": "card.hunter-dodge.name",
+    "descriptionKey": "card.hunter-dodge.description",
+    "cost": {
+      "resourceId": "serum",
+      "amount": 1
+    },
+    "target": "self",
+    "type": "defense",
+    "rarity": "gray",
+    "playDestination": "discard",
+    "tags": [
+      "defense"
+    ],
+    "effects": [
+      {
+        "effectId": "core.block",
+        "params": {
+          "amount": 6
+        }
+      }
+    ],
+    "upgrades": [
+      {
+        "descriptionKey": "card.hunter-dodge.upgrade",
+        "effects": [
+          {
+            "effectId": "core.block",
+            "params": {
+              "amount": 9
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "card.trap-setup",
+    "nameKey": "card.trap-setup.name",
+    "descriptionKey": "card.trap-setup.description",
+    "cost": {
+      "resourceId": "serum",
+      "amount": 2
+    },
+    "target": "enemy",
+    "type": "skill",
+    "rarity": "gray",
+    "playDestination": "discard",
+    "tags": [
+      "skill"
+    ],
+    "effects": [
+      {
+        "effectId": "core.damage",
+        "params": {
+          "amount": 4
+        }
+      },
+      {
+        "effectId": "core.addStatus",
+        "params": {
+          "statusId": "status.weak",
+          "stacks": 1,
+          "durationFromStacks": true
+        }
+      }
+    ],
+    "upgrades": [
+      {
+        "descriptionKey": "card.trap-setup.upgrade",
+        "effects": [
+          {
+            "effectId": "core.damage",
+            "params": {
+              "amount": 6
+            }
+          },
+          {
+            "effectId": "core.addStatus",
+            "params": {
+              "statusId": "status.weak",
+              "stacks": 2,
+              "durationFromStacks": true
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "card.conceal",
+    "nameKey": "card.conceal.name",
+    "descriptionKey": "card.conceal.description",
+    "cost": {
+      "resourceId": "serum",
+      "amount": 3
+    },
+    "target": "self",
+    "type": "ability",
+    "rarity": "gray",
+    "playDestination": "exhaust",
+    "tags": [
+      "ability"
+    ],
+    "effects": [
+      {
+        "effectId": "core.addStatus",
+        "params": {
+          "statusId": "status.conceal",
+          "stacks": 1
+        }
+      }
+    ],
+    "upgrades": [
+      {
+        "descriptionKey": "card.conceal.upgrade",
+        "effects": [
+          {
+            "effectId": "core.addStatus",
+            "params": {
+              "statusId": "status.conceal",
+              "stacks": 2
+            }
+          }
+        ]
+      }
+    ]
+  }
+]

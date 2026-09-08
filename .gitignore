@@ -8,3 +8,9 @@ test-results/
 *.log
 *.tsbuildinfo
 release/
+unity/Library/
+unity/Temp/
+unity/Obj/
+unity/Logs/
+unity/UserSettings/
+unity/Build/

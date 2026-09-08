@@ -1,0 +1,73 @@
+[
+  {
+    "id": "character.scavenger",
+    "nameKey": "character.scavenger.name",
+    "descriptionKey": "character.scavenger.description",
+    "resourceId": "action",
+    "maxHealth": 80,
+    "startingDeck": [
+      "card.smash",
+      "card.smash",
+      "card.smash",
+      "card.smash",
+      "card.dodge",
+      "card.dodge",
+      "card.dodge",
+      "card.dodge",
+      "card.call-ally",
+      "card.anger"
+    ],
+    "unlockCost": 0,
+    "metaUpgrades": [
+      {
+        "id": "meta.scavenger.health-1",
+        "stat": "maxHealth",
+        "amount": 5,
+        "cost": 5
+      },
+      {
+        "id": "meta.scavenger.action-1",
+        "stat": "startingResource",
+        "amount": 1,
+        "cost": 12
+      }
+    ]
+  },
+  {
+    "id": "character.hunter",
+    "nameKey": "character.hunter.name",
+    "descriptionKey": "character.hunter.description",
+    "resourceId": "serum",
+    "maxHealth": 60,
+    "startingDeck": [
+      "card.stab",
+      "card.stab",
+      "card.stab",
+      "card.stab",
+      "card.hunter-dodge",
+      "card.hunter-dodge",
+      "card.hunter-dodge",
+      "card.hunter-dodge",
+      "card.trap-setup",
+      "card.conceal"
+    ],
+    "startingCollectibleIds": [
+      "collectible.hunter-strap"
+    ],
+    "unlockCost": 0,
+    "metaUpgrades": [
+      {
+        "id": "meta.hunter.health-1",
+        "stat": "maxHealth",
+        "amount": 5,
+        "cost": 5
+      },
+      {
+        "id": "meta.hunter.serum-1",
+        "stat": "startingResource",
+        "amount": 1,
+        "cost": 12
+      }
+    ]
+  }
+]

@@ -15,6 +15,7 @@
     "content:check": "node scripts/sync-content.mjs --check"
     ,"package:portable": "powershell -ExecutionPolicy Bypass -File scripts/package-portable.ps1"
     ,"package:windows": "powershell -ExecutionPolicy Bypass -File scripts/package-windows.ps1"
+    ,"package:unity:windows": "powershell -ExecutionPolicy Bypass -File scripts/package-unity-windows.ps1"
   },
   "dependencies": {
     "phaser": "^3.90.0",

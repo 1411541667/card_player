@@ -1,0 +1,137 @@
+{
+  "id": "wasteland-rules-v2",
+  "startingCharacterId": "character.scavenger",
+  "startingDeck": [
+    "card.smash",
+    "card.smash",
+    "card.smash",
+    "card.smash",
+    "card.dodge",
+    "card.dodge",
+    "card.dodge",
+    "card.dodge",
+    "card.call-ally",
+    "card.anger"
+  ],
+  "startingHealth": 80,
+  "startingGold": 200,
+  "startingCollectibleIds": [
+    "collectible.scavenger-bag"
+  ],
+  "startingBoonIds": [
+    "boon.max-card",
+    "boon.max-health",
+    "boon.gold-shop",
+    "boon.resource",
+    "boon.greedy-coin",
+    "boon.remove-three"
+  ],
+  "handSize": 5,
+  "handLimit": 10,
+  "resources": {
+    "action": {
+      "perTurn": 3,
+      "maximum": 10
+    },
+    "serum": {
+      "perTurn": 3,
+      "maximum": 10
+    }
+  },
+  "turn": {
+    "discardHandAtEnd": true,
+    "clearBlockAtStart": false
+  },
+  "shop": {
+    "cardOfferCount": 5,
+    "cardPriceMin": 20,
+    "cardPriceMax": 150,
+    "cardPriceRanges": {
+      "gray": {
+        "min": 20,
+        "max": 50
+      },
+      "blue": {
+        "min": 50,
+        "max": 75
+      },
+      "purple": {
+        "min": 75,
+        "max": 100
+      },
+      "gold": {
+        "min": 100,
+        "max": 150
+      }
+    },
+    "collectibleOfferCount": 2,
+    "collectiblePriceMin": 150,
+    "collectiblePriceMax": 300,
+    "collectiblePriceRanges": {
+      "blue": {
+        "min": 150,
+        "max": 200
+      },
+      "purple": {
+        "min": 200,
+        "max": 250
+      },
+      "gold": {
+        "min": 250,
+        "max": 300
+      }
+    },
+    "healing": {
+      "basePrice": 100,
+      "priceStep": 25,
+      "percent": 0.3
+    },
+    "removal": {
+      "basePrice": 100,
+      "priceStep": 50,
+      "minimumDeckSize": 1
+    },
+    "upgrade": {
+      "basePrice": 50,
+      "priceStep": 50
+    }
+  },
+  "normalCombatGold": {
+    "min": 20,
+    "max": 60
+  },
+  "rewardChoiceCount": 3,
+  "map": {
+    "floorCount": 4,
+    "minNodes": 60,
+    "maxNodes": 72,
+    "rows": 13,
+    "maxNodesPerRow": 5,
+    "shopCount": {
+      "min": 4,
+      "max": 5
+    },
+    "rewardCount": {
+      "min": 9,
+      "max": 11
+    },
+    "eliteCount": 5,
+    "restCount": {
+      "min": 7,
+      "max": 8
+    },
+    "remainingWeights": {
+      "combat": 0.4,
+      "event": 0.6
+    }
+  },
+  "scoring": {
+    "node": 10,
+    "battle": 40,
+    "boss": 200,
+    "floor": 150,
+    "remainingHealth": 2,
+    "victory": 800,
+    "metaTokenDivisor": 100
+  }
+}

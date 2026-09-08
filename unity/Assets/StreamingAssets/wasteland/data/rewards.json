@@ -1,0 +1,100 @@
+[
+  {
+    "id": "reward.scrap-150",
+    "nameKey": "reward.scrap-150.name",
+    "descriptionKey": "reward.scrap-150.description",
+    "type": "currency",
+    "amount": 150
+  },
+  {
+    "id": "reward.heal-30",
+    "nameKey": "reward.heal-30.name",
+    "descriptionKey": "reward.heal-30.description",
+    "type": "healing",
+    "amount": 0.3
+  },
+  {
+    "id": "reward.gauze",
+    "nameKey": "collectible.gauze.name",
+    "descriptionKey": "collectible.gauze.description",
+    "type": "collectible",
+    "collectibleId": "collectible.gauze"
+  },
+  {
+    "id": "reward.bag",
+    "nameKey": "collectible.scavenger-bag.name",
+    "descriptionKey": "collectible.scavenger-bag.description",
+    "type": "collectible",
+    "collectibleId": "collectible.scavenger-bag"
+  },
+  {
+    "id": "reward.can",
+    "nameKey": "collectible.can.name",
+    "descriptionKey": "collectible.can.description",
+    "type": "collectible",
+    "collectibleId": "collectible.can"
+  },
+  {
+    "id": "reward.card-smash",
+    "nameKey": "card.smash.name",
+    "descriptionKey": "card.smash.description",
+    "type": "card",
+    "cardId": "card.smash"
+  },
+  {
+    "id": "reward.card-dodge",
+    "nameKey": "card.dodge.name",
+    "descriptionKey": "card.dodge.description",
+    "type": "card",
+    "cardId": "card.dodge"
+  },
+  {
+    "id": "reward.card-call",
+    "nameKey": "card.call-ally.name",
+    "descriptionKey": "card.call-ally.description",
+    "type": "card",
+    "cardId": "card.call-ally"
+  },
+  {
+    "id": "reward.card-anger",
+    "nameKey": "card.anger.name",
+    "descriptionKey": "card.anger.description",
+    "type": "card",
+    "cardId": "card.anger"
+  },
+  {
+    "id": "reward.card-rock",
+    "nameKey": "card.throw-rock.name",
+    "descriptionKey": "card.throw-rock.description",
+    "type": "card",
+    "cardId": "card.throw-rock"
+  },
+  {
+    "id": "reward.card-sand",
+    "nameKey": "card.sand-toss.name",
+    "descriptionKey": "card.sand-toss.description",
+    "type": "card",
+    "cardId": "card.sand-toss"
+  },
+  {
+    "id": "reward.glow-stick",
+    "nameKey": "collectible.glow-stick.name",
+    "descriptionKey": "collectible.glow-stick.description",
+    "type": "collectible",
+    "collectibleId": "collectible.glow-stick"
+  },
+  {
+    "id": "reward.brick",
+    "nameKey": "collectible.brick.name",
+    "descriptionKey": "collectible.brick.description",
+    "type": "collectible",
+    "collectibleId": "collectible.brick"
+  },
+  {
+    "id": "reward.cooling-patch",
+    "nameKey": "collectible.cooling-patch.name",
+    "descriptionKey": "collectible.cooling-patch.description",
+    "type": "collectible",
+    "collectibleId": "collectible.cooling-patch"
+  }
+]
