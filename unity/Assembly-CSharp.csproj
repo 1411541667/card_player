@@ -60,6 +60,9 @@
     <Analyzer Include="D:\unity\2022.3.62f3c1\Editor\Data\Tools\Unity.SourceGenerators\Unity.Properties.SourceGenerator.dll" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\Scripts\Bootstrap.Presentation.cs" />
+    <Compile Include="Assets\Scripts\Bootstrap.Route.cs" />
+    <Compile Include="Assets\Scripts\Bootstrap.Combat.cs" />
     <Compile Include="Assets\Scripts\Bootstrap.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -129,6 +132,10 @@
     </Reference>
     <Reference Include="UnityEngine.IMGUIModule">
       <HintPath>D:\unity\2022.3.62f3c1\Editor\Data\Managed\UnityEngine\UnityEngine.IMGUIModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.ImageConversionModule">
+      <HintPath>D:\unity\2022.3.62f3c1\Editor\Data\Managed\UnityEngine\UnityEngine.ImageConversionModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.InputModule">

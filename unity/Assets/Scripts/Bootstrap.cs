@@ -1,7 +1,7 @@
 using RoguelikeCardFramework.Core;
 using UnityEngine;
 
-public sealed class Bootstrap : MonoBehaviour
+public sealed partial class Bootstrap : MonoBehaviour
 {
     private ContentSummary summary;
     private MetaProgressSave meta;
@@ -22,12 +22,18 @@ public sealed class Bootstrap : MonoBehaviour
         content = new ContentDatabase(contentRoot);
         game = new NativeGameSession(content);
         var oldRun = saves.LoadRun(); if (oldRun != null) game.Restore(oldRun);
+        game.GoToMenu();
         if (System.Array.IndexOf(System.Environment.GetCommandLineArgs(), "--smoke-test") >= 0)
         {
-            var smoke = new NativeGameSession(content); smoke.NewRun(); smoke.ChooseCharacter("character.scavenger"); smoke.ChooseNode("战斗");
-            var ok = summary.cards == 10 && summary.characters == 2 && summary.enemies == 17 && smoke.Phase == NativePhase.Combat && smoke.Hand.Count == 5;
+            var smoke = new NativeGameSession(content); smoke.NewRun("smoke"); smoke.ChooseCharacter("character.scavenger");
+            smoke.ChooseBoon(smoke.Setup.boonOffers[0]);
+            if (smoke.Phase == NativePhase.Shop) smoke.LeaveShop();
+            while (smoke.Phase == NativePhase.BoonRemove) smoke.RemoveStartingCard(smoke.Deck[0]);
+            smoke.ChooseTheme("theme.dust");
+            var ok = summary.cards == 10 && summary.characters == 2 && summary.enemies == 17 && smoke.Phase == NativePhase.Map && smoke.Map.nodes.Count >= 60;
             Debug.Log(ok ? "NATIVE_SMOKE_OK" : "NATIVE_SMOKE_FAILED"); Application.Quit(ok ? 0 : 2); return;
         }
+        InitializePresentation();
     }
 
     private void OnGUI()
@@ -35,13 +41,8 @@ public sealed class Bootstrap : MonoBehaviour
         // GUI.skin and other IMGUI APIs are only valid during OnGUI. Calling
         // them from Awake throws and leaves the player stuck after the splash.
         ConfigureFont();
-        EnsureStyles(); GUI.color = Color.white; GUI.backgroundColor = new Color(.16f, .2f, .28f);
-        GUI.Box(new Rect(0, 0, Screen.width, Screen.height), GUIContent.none);
-        GUILayout.BeginArea(new Rect(Mathf.Max(20, Screen.width * .06f), 25, Mathf.Max(600, Screen.width * .88f), Screen.height - 50));
-        GUILayout.Label("异变独行", title); GUILayout.Space(8);
-        if (game.Phase != NativePhase.Menu && game.Phase != NativePhase.CharacterSelect && game.Phase != NativePhase.Encyclopedia && game.Phase != NativePhase.Settings)
-            GUILayout.Label($"第 {game.Floor} 层 · 节点 {game.Node}/6    生命 {game.Health}/{game.MaxHealth}    代币 {game.Gold}    分数 {game.Score}", heading);
-        GUILayout.Space(10); DrawPhase(); GUILayout.EndArea();
+        EnsureStyles();
+        DrawPresentation();
     }
 
     private void DrawPhase()
@@ -50,6 +51,9 @@ public sealed class Bootstrap : MonoBehaviour
         {
             case NativePhase.Menu: DrawMenu(); break;
             case NativePhase.CharacterSelect: DrawCharacters(); break;
+            case NativePhase.BoonSelect: DrawBoons(); break;
+            case NativePhase.BoonRemove: DrawStartingRemoval(); break;
+            case NativePhase.ThemeSelect: DrawThemes(); break;
             case NativePhase.Map: DrawMap(); break;
             case NativePhase.Combat: DrawCombat(); break;
             case NativePhase.Reward: DrawReward(); break;
@@ -73,26 +77,33 @@ public sealed class Bootstrap : MonoBehaviour
     private void DrawCharacters()
     {
         GUILayout.Label("选择角色", heading); GUILayout.Label("选择一名角色进入风沙。", body);
-        foreach (var pair in content.characters) if (Action($"{pair.Value.name}    生命 {pair.Value.health}    资源：{pair.Value.resource}")) game.ChooseCharacter(pair.Key);
+        foreach (var pair in content.characters) if (Action($"{pair.Value.name}    生命 {pair.Value.health}    资源：{pair.Value.resource}")) { game.ChooseCharacter(pair.Key); AutoSave(); break; }
         if (Action("返回")) game.ReturnMenu();
     }
     private void DrawMap()
     {
-        GUILayout.Label("废土路线", heading); GUILayout.Label(game.Message, body); GUILayout.Space(16);
-        foreach (var choice in game.MapChoices()) if (Action("前往：" + choice)) { game.ChooseNode(choice); AutoSave(); }
+        GUILayout.Label($"废土路线 · 第 {game.Floor} 层", heading);
+        GUILayout.Label($"生命 {game.Health}/{game.MaxHealth} · 代币 {game.Gold}\n{game.Message}", body);
+        DrawRouteBoard();
         Footer();
     }
     private void DrawCombat()
     {
+        if (game.Combat != null) { DrawNativeCombat(); return; }
         GUILayout.Label($"战斗：{game.EnemyName}", heading); GUILayout.Label($"敌人生命 {game.EnemyHealth}/{game.EnemyMaxHealth} · 下一次攻击 {game.EnemyDamage}\n你的资源 {game.Resource} · 防护 {game.Block}\n{game.Message}", body); GUILayout.Space(10);
         GUILayout.Label("手牌", heading);
-        for (var i = 0; i < game.Hand.Count; i++) { var card = content.cards[game.Hand[i]]; if (Action($"{card.name}  [{card.cost}]    {card.description}")) { game.PlayCard(i); AutoSave(); break; } }
+        for (var i = 0; i < game.Hand.Count; i++) { var card = game.CardFor(game.Hand[i]); if (Action($"{card.name}  [{card.cost}]    {card.description}")) { game.PlayCard(i); AutoSave(); break; } }
         if (Action("结束回合")) { game.EndTurn(); AutoSave(); }
         GUILayout.Label("战斗记录：\n" + string.Join("\n", game.Log), small);
     }
     private void DrawReward()
     {
-        GUILayout.Label("首领奖励", heading); GUILayout.Label(game.Message, body);
+        GUILayout.Label("探索奖励", heading); GUILayout.Label(game.Message, body);
+        if (game.RewardIds.Count > 0)
+        {
+            for (var i = 0; i < game.RewardIds.Count; i++) if (Action(game.RewardLabel(game.RewardIds[i]))) { game.ChooseReward(i); AutoSave(); break; }
+            return;
+        }
         if (Action("150 代币")) game.ChooseReward(0);
         if (Action("恢复 30% 生命")) game.ChooseReward(1);
         if (Action("获得随机卡牌")) game.ChooseReward(2);
@@ -101,8 +112,8 @@ public sealed class Bootstrap : MonoBehaviour
     private void DrawShop()
     {
         GUILayout.Label("废墟商店", heading); GUILayout.Label(game.Message, body);
-        if (Action("治疗 30% 生命（100 代币）")) game.BuyHeal();
-        if (Action("购买投掷石头（50 代币）")) game.BuyCard();
+        if (Action("治疗 30% 生命（100 代币）")) { game.BuyHeal(); AutoSave(); }
+        if (Action("购买投掷石头（50 代币）")) { game.BuyCard(); AutoSave(); }
         if (Action("离开商店")) { game.LeaveShop(); AutoSave(); }
     }
     private void DrawEvent()
@@ -124,7 +135,7 @@ public sealed class Bootstrap : MonoBehaviour
     }
     private void DrawEncyclopedia()
     {
-        GUILayout.Label("百科", heading); scroll = GUILayout.BeginScrollView(scroll, GUILayout.Height(Screen.height - 230));
+        GUILayout.Label("百科", heading); scroll = GUILayout.BeginScrollView(scroll, GUILayout.Height(350));
         GUILayout.Label("角色", heading); foreach (var item in content.characters.Values) GUILayout.Label($"• {item.name} — 生命 {item.health}", body);
         GUILayout.Label("卡牌", heading); foreach (var item in content.cards.Values) GUILayout.Label($"• {item.name} [{item.type}] — {item.description}", body);
         GUILayout.Label("敌人", heading); foreach (var item in content.enemies) GUILayout.Label($"• {item.name} — 生命 {item.health}", body);
@@ -139,7 +150,7 @@ public sealed class Bootstrap : MonoBehaviour
     }
     private void Footer() { GUILayout.Space(15); if (Action("保存并返回主菜单")) { AutoSave(); game.GoToMenu(); } }
     private bool Action(string label) { return GUILayout.Button(label, button, GUILayout.MinHeight(46), GUILayout.MaxWidth(760)); }
-    private void AutoSave() => saves.SaveRun(game.Export());
+    private void AutoSave() { if (!previewMode) saves.SaveRun(game.Export()); }
     private void AutoSaveOnRepaint() { if (Event.current.type == EventType.Repaint) AutoSave(); }
     private void Update() { if (Input.GetKeyDown(KeyCode.F11)) Screen.fullScreen = !Screen.fullScreen; if (Input.GetKeyDown(KeyCode.Escape) && game.Phase != NativePhase.Menu) game.GoToMenu(); }
     private void EnsureStyles()
@@ -149,6 +160,12 @@ public sealed class Bootstrap : MonoBehaviour
         heading = new GUIStyle(GUI.skin.label) { fontSize = 22, fontStyle = FontStyle.Bold, wordWrap = true, normal = { textColor = new Color(.95f, .78f, .35f) } };
         body = new GUIStyle(GUI.skin.label) { fontSize = 18, wordWrap = true, normal = { textColor = new Color(.84f, .88f, .94f) } };
         small = new GUIStyle(body) { fontSize = 14 }; button = new GUIStyle(GUI.skin.button) { fontSize = 17, alignment = TextAnchor.MiddleLeft, padding = new RectOffset(18, 18, 8, 8), wordWrap = true };
+        panel = new GUIStyle(GUI.skin.box) { padding = new RectOffset(0, 0, 0, 0), border = new RectOffset(1, 1, 1, 1), normal = { background = MakePanelTexture() } };
+    }
+
+    private Texture2D MakePanelTexture()
+    {
+        var texture = new Texture2D(1, 1); texture.SetPixel(0, 0, new Color(.055f, .07f, .08f, .96f)); texture.Apply(); return texture;
     }
 
     private void ConfigureFont()

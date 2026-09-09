@@ -19,11 +19,15 @@ npm run lint
 npm run test:e2e
 npm run content:check
 npm run content:sync
+node scripts/export-unity-parity.mjs --check
+powershell -ExecutionPolicy Bypass -File .\scripts\test-unity.ps1
 ```
 
 ## Windows 桌面发行
 
 仓库现在同时提供网页版本和 Unity 原生 Windows 版本。原生工程位于 `unity/`，使用 Unity 2022.3.62f3c1 LTS、Windows x64 IL2CPP，不依赖 HTML、WebView2 或 Node.js。工程源码、内容数据和编辑器构建脚本已纳入版本控制；Unity 生成的 `Library/`、`Temp/`、`Build/` 等缓存目录按 `.gitignore` 排除。
+
+迁移中的源码验收请参照 [Unity 测试说明](docs/unity-testing.md)。关闭 Unity 编辑器后，在仓库根目录执行 `powershell -ExecutionPolicy Bypass -File .\scripts\test-unity.ps1`，可检查网页参考数据并运行 Unity EditMode 测试。现有安装包不自动包含最新源码修改；规则同步进度和未完成模块见 [迁移计划](docs/unity-migration-plan.md)。
 
 打开 Unity 工程后运行 `Assets/Scenes/Bootstrap.unity`，或在 Unity 菜单执行 `Build > Windows x64` 生成 `release/unity-stage-{version}`。修改根目录 `package.json` 的 `version` 后，可使用自动化脚本构建并打包安装程序：
 
@@ -57,6 +61,10 @@ nodes, view domain events, and import or export a `RunSaveV2` document.
 - `src/content/wasteland/data`: generated/validated JSON definitions loaded by the game.
 - `src/content/wasteland/tables`: human-editable CSV sources for cards, characters, enemies, bosses, events, rewards, and collectibles.
 - `scripts/sync-content.mjs`: synchronizes editable CSV values into runtime JSON and detects drift.
+- `unity/Assets/Scripts/Core`: Unity 原生规则层，包含命名空间随机数、路线生成、内容数据库、战斗、奖励和原生存档。
+- `unity/Assets/Scripts/Bootstrap.*`: 当前 IMGUI 操作与展示层，按路线、战斗和表现拆分。
+- `unity/Assets/Tests/EditMode`: 固定 seed 的网页/Unity 路线、战斗、奖励和随机数一致性测试。
+- `unity/Assets/StreamingAssets`: Unity 运行时内容及展示资源；规则数据与网页端内容包保持同步。
 
 The UI sends `GameCommand` objects to `GameKernel`. The kernel validates and applies each command
 atomically, emits `DomainEvent` records, and publishes a cloned `GameSnapshot`. Rendering code never

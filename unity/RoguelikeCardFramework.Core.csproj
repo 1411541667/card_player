@@ -61,11 +61,19 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\Scripts\Core\MiniJson.cs" />
+    <Compile Include="Assets\Scripts\Core\ContentDatabase.Combat.cs" />
     <Compile Include="Assets\Scripts\Core\SaveModels.cs" />
+    <Compile Include="Assets\Scripts\Core\NativeGameSession.Route.cs" />
+    <Compile Include="Assets\Scripts\Core\NativeGameSession.Combat.cs" />
+    <Compile Include="Assets\Scripts\Core\RouteModels.cs" />
     <Compile Include="Assets\Scripts\Core\ContentModels.cs" />
     <Compile Include="Assets\Scripts\Core\NativeGameSession.cs" />
+    <Compile Include="Assets\Scripts\Core\CombatModels.cs" />
     <Compile Include="Assets\Scripts\Core\ContentDatabase.cs" />
+    <Compile Include="Assets\Scripts\Core\RouteGenerator.cs" />
     <Compile Include="Assets\Scripts\Core\JsonContentLoader.cs" />
+    <Compile Include="Assets\Scripts\Core\NativeGameSession.Rewards.cs" />
+    <Compile Include="Assets\Scripts\Core\NamespacedRandom.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Scripts\Core\RoguelikeCardFramework.Core.asmdef" />
@@ -137,6 +145,10 @@
     </Reference>
     <Reference Include="UnityEngine.IMGUIModule">
       <HintPath>D:\unity\2022.3.62f3c1\Editor\Data\Managed\UnityEngine\UnityEngine.IMGUIModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.ImageConversionModule">
+      <HintPath>D:\unity\2022.3.62f3c1\Editor\Data\Managed\UnityEngine\UnityEngine.ImageConversionModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.InputModule">
