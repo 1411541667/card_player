@@ -110,6 +110,23 @@ namespace RoguelikeCardFramework.Tests
             Assert.AreEqual(JsonUtility.ToJson(game.Export()), JsonUtility.ToJson(restored.Export()));
             var snapshot = restored.Map; snapshot.nodes.Clear(); Assert.Greater(restored.Map.nodes.Count, 0);
         }
+        [Test] public void MapInkSurvivesSaveAndCannotMutateSessionThroughSnapshot()
+        {
+            var game = new NativeGameSession(content); game.NewRun("ink-test"); game.ChooseCharacter("character.scavenger");
+            game.ChooseBoon(game.Setup.boonOffers.First(id => id != "boon.gold-shop" && id != "boon.remove-three"));
+            game.ChooseTheme("theme.dust");
+            var cells = new List<NativeMapInk> { new NativeMapInk { x = 45, y = 89, color = 1 } };
+            var before = JsonUtility.ToJson(game.Export().random);
+            game.SetMapInk(cells); cells[0].x = 999;
+            var restored = new NativeGameSession(content);
+            restored.Restore(JsonUtility.FromJson<NativeRunSave>(JsonUtility.ToJson(game.Export())));
+            Assert.AreEqual(45, restored.Map.ink[0].x);
+            Assert.AreEqual(89, restored.Map.ink[0].y);
+            Assert.AreEqual(1, restored.Map.ink[0].color);
+            var snapshot = restored.Map; snapshot.ink.Clear();
+            Assert.AreEqual(1, restored.Map.ink.Count);
+            Assert.AreEqual(before, JsonUtility.ToJson(restored.Export().random));
+        }
         [Test] public void OrdinaryRewardDoesNotAdvanceFloorAndBossRewardDoes()
         {
             var random = new NamespacedRandom("reward-test");
@@ -131,3 +148,4 @@ namespace RoguelikeCardFramework.Tests
         }
     }
 }
+

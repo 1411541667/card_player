@@ -1,0 +1,19 @@
+{
+  "icon_map/boss.svg": "9bb95b59133e579e6687fd5da8fa32ae041bde88cd285d11036714c314a1c54d",
+  "icon_map/combat.svg": "5379b11f5f9b834ff016f7a73876983eafb4b26edaa462b4b6b7fd0b30d3bacd",
+  "icon_map/elite.svg": "432c41ab071f0678063fad34a0fc5692b1aaef4cf9c47134d4752fbe2e963d6a",
+  "icon_map/event.svg": "ac06bf30ffe6226e66ee469da5c051e6a4c092a40d1b9012ce2c698b527c830f",
+  "icon_map/rest.svg": "62273a40370880d94342fd30801134e3bd6fc1dd2ba41b1ccadb426f7706cf7f",
+  "icon_map/reward.svg": "7b114a76d53418aefd5fa6e3eed6bd1a8eb856a567f37890701cdb2027214063",
+  "icon_map/shop.svg": "5b323fcc278f4dad87f09f8ebb00a24ef138df187ebbbe9c8ccc9ad99123788b",
+  "icon_card/ability.svg": "a2208fec2feeebe6475df29183853cd4fe74e0c646155996f3bc18191945731c",
+  "icon_card/attack.svg": "397d023970be3b57f9c0e8b09fe6083486cef0ddac689beb6fd6f03fdf056ed1",
+  "icon_card/defense.svg": "3ef3d9d8156156cda951ef4765bdffc07b7fdfa3c75c5f207bd46bd584f888d5",
+  "icon_card/skill.svg": "d4981fe16a04c90aa85f4c8d74a73dbe9da6b2c5b4d510e800e006fb658d1a73",
+  "icon_battle/anger.svg": "2388c8bacf78dbade9b34ded4fd4413b80670c8724fae97182dba1abee3bbe07",
+  "icon_battle/clear.svg": "98a37c2a7dadcfd5440a469f603d30a121410d68d04afc2d5d8373253b6de278",
+  "icon_battle/conceal.svg": "78353115d45e7dc0dc2086598c24ae928494d2b2189ea3904dab16011456a92f",
+  "icon_battle/sharp.svg": "7e94dc6c6da4b511251951441e7c08f30ca4724014f08c9aa77030f1e5a642c4",
+  "icon_battle/strong.svg": "4b522727185ea62a1b6770159773d90427cd17ea53cb3bd87fdad5d46cf96518",
+  "icon_battle/weak.svg": "3371f348b89f0d0f81cf0d6303dc8525fb7c911d5461b4654ccb42d6f6fb8e05"
+}

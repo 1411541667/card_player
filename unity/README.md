@@ -2,7 +2,9 @@
 
 Unity 2022.3.62f3c1 LTS / Windows x64。
 
-这是从网页版本迁移的原生客户端工程。当前已接入可复现随机数、角色/祝福/删牌/主题开局流程、四层地图生成与节点推进、内容驱动战斗和奖励及原生 JSON 存档。地图、祝福、战斗回放和奖励效果通过网页参考数据比对；事件/商店/休整升级、网页存档兼容和正式 UGUI 仍在迁移中。当前可操作界面使用 IMGUI。
+这是从网页版本迁移的原生客户端工程。当前已接入可复现随机数、角色/祝福/删牌/主题开局流程、四层地图生成与节点推进、内容驱动战斗和奖励及原生 JSON 存档。地图、祝福、战斗回放和奖励效果通过网页参考数据比对；事件/商店/休整升级及网页存档兼容仍在迁移中。
+
+客户端界面已迁移为运行时 Canvas/uGUI Presentation 层，覆盖菜单、开局、路线、战斗、奖励和辅助页面。路线图支持左键拖动及右键三色标记/擦除，标记会写入原生存档；菜单播放 `StreamingAssets/presentation/menu.mp4`，无法播放时回退到 `menu.jpg`。图标和菜单媒体由根目录 `scripts/sync-unity-ui-assets.mjs` 从网页资源同步。
 
 原生存档为 `NativeRunSave` schema 4，保存地图、开局状态、独立卡牌实例、战斗牌堆/状态/敌人意图/资源和奖励候选；可读取 schema 1/2/3 的旧原生存档。旧存档中正在进行的简化战斗会按旧规则继续，新地图节点战斗采用新的规则。它不是网页端 `RunSaveV2`，不可直接互换。
 
@@ -13,5 +15,7 @@ Unity 2022.3.62f3c1 LTS / Windows x64。
 打开工程后运行 `Assets/Scenes/Bootstrap.unity`。内容原始 JSON 位于 `Assets/StreamingAssets/wasteland/data`，存档位于 Unity 的 `Application.persistentDataPath`。
 
 Windows 构建：在 Unity 菜单选择 `Build > Windows x64`，输出到仓库的 `release/unity-stage-0.1.0`。Windows Build Support (IL2CPP) 已启用。
+
+快速界面预览：在 Unity 菜单选择 `Build > UI Preview Windows`，会使用 Mono Development Build 输出到 `release/unity-ui-preview`；运行时可传入 `--ui-preview`，避免读取和写入个人游戏进度。
 
 重复发行：修改根目录 `package.json` 的版本号后，在仓库根目录执行 `npm run package:unity:windows`，脚本会调用 Unity IL2CPP、编译 Inno Setup，并输出 `release/异变独行-{version}-Setup.exe`。

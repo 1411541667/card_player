@@ -27,7 +27,9 @@ powershell -ExecutionPolicy Bypass -File .\scripts\test-unity.ps1
 
 仓库现在同时提供网页版本和 Unity 原生 Windows 版本。原生工程位于 `unity/`，使用 Unity 2022.3.62f3c1 LTS、Windows x64 IL2CPP，不依赖 HTML、WebView2 或 Node.js。工程源码、内容数据和编辑器构建脚本已纳入版本控制；Unity 生成的 `Library/`、`Temp/`、`Build/` 等缓存目录按 `.gitignore` 排除。
 
-迁移中的源码验收请参照 [Unity 测试说明](docs/unity-testing.md)。关闭 Unity 编辑器后，在仓库根目录执行 `powershell -ExecutionPolicy Bypass -File .\scripts\test-unity.ps1`，可检查网页参考数据并运行 Unity EditMode 测试。现有安装包不自动包含最新源码修改；规则同步进度和未完成模块见 [迁移计划](docs/unity-migration-plan.md)。
+Unity 客户端现已使用运行时生成的 Canvas/uGUI Presentation 层，覆盖菜单、开局、可拖拽路线图、战斗、奖励和其他页面；菜单支持视频背景，地图、卡牌和战斗图标由网页端 SVG 资源生成。右键可在路线图上标记，左键拖动地图，`Esc` 打开暂停菜单，`F11` 切换全屏。
+
+迁移中的源码验收请参照 [Unity 测试说明](docs/unity-testing.md)。关闭 Unity 编辑器后，在仓库根目录执行 `powershell -ExecutionPolicy Bypass -File .\scripts\test-unity.ps1`，可检查网页参考数据并运行 Unity EditMode 测试。现有安装包不自动包含最新源码修改；规则同步进度和未完成模块见 [迁移计划](docs/unity-migration-plan.md)。Unity 菜单中的 `Build > UI Preview Windows` 可生成较快的 Mono 开发预览版到 `release/unity-ui-preview`。
 
 打开 Unity 工程后运行 `Assets/Scenes/Bootstrap.unity`，或在 Unity 菜单执行 `Build > Windows x64` 生成 `release/unity-stage-{version}`。修改根目录 `package.json` 的 `version` 后，可使用自动化脚本构建并打包安装程序：
 
@@ -62,9 +64,10 @@ nodes, view domain events, and import or export a `RunSaveV2` document.
 - `src/content/wasteland/tables`: human-editable CSV sources for cards, characters, enemies, bosses, events, rewards, and collectibles.
 - `scripts/sync-content.mjs`: synchronizes editable CSV values into runtime JSON and detects drift.
 - `unity/Assets/Scripts/Core`: Unity 原生规则层，包含命名空间随机数、路线生成、内容数据库、战斗、奖励和原生存档。
-- `unity/Assets/Scripts/Bootstrap.*`: 当前 IMGUI 操作与展示层，按路线、战斗和表现拆分。
+- `unity/Assets/Scripts/Presentation`: 运行时 Canvas/uGUI 展示层，包含各页面、战斗界面、可拖拽/标记地图和自绘 UI 图形。
 - `unity/Assets/Tests/EditMode`: 固定 seed 的网页/Unity 路线、战斗、奖励和随机数一致性测试。
-- `unity/Assets/StreamingAssets`: Unity 运行时内容及展示资源；规则数据与网页端内容包保持同步。
+- `unity/Assets/StreamingAssets`: Unity 运行时内容、菜单媒体和 PNG 图标；规则数据与网页端内容包保持同步。
+- `scripts/sync-unity-ui-assets.mjs`: 将网页 SVG 图标转换为 Unity PNG，并同步菜单图片、视频及源文件哈希。
 
 The UI sends `GameCommand` objects to `GameKernel`. The kernel validates and applies each command
 atomically, emits `DomainEvent` records, and publishes a cloned `GameSnapshot`. Rendering code never

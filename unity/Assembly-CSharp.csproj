@@ -60,9 +60,12 @@
     <Analyzer Include="D:\unity\2022.3.62f3c1\Editor\Data\Tools\Unity.SourceGenerators\Unity.Properties.SourceGenerator.dll" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\Scripts\Bootstrap.Presentation.cs" />
-    <Compile Include="Assets\Scripts\Bootstrap.Route.cs" />
-    <Compile Include="Assets\Scripts\Bootstrap.Combat.cs" />
+    <Compile Include="Assets\Scripts\Presentation\UiGeometry.cs" />
+    <Compile Include="Assets\Scripts\Presentation\NativeGameView.cs" />
+    <Compile Include="Assets\Scripts\Presentation\MapNavigation.cs" />
+    <Compile Include="Assets\Scripts\Presentation\NativeGameView.Map.cs" />
+    <Compile Include="Assets\Scripts\Presentation\NativeGameView.Battle.cs" />
+    <Compile Include="Assets\Scripts\Presentation\NativeGameView.Pages.cs" />
     <Compile Include="Assets\Scripts\Bootstrap.cs" />
   </ItemGroup>
   <ItemGroup>

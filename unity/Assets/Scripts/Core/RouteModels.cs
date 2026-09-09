@@ -24,9 +24,11 @@ namespace RoguelikeCardFramework.Core
         public bool visited, available;
         public List<string> connections = new();
     }
+    [Serializable] public sealed class NativeMapInk { public int x, y, color; }
     [Serializable] public sealed class NativeMapState
     {
         public string currentNodeId;
+        public List<NativeMapInk> ink = new();
         public List<NativeMapNode> nodes = new();
     }
     [Serializable] public sealed class NativeCardInstance
@@ -41,3 +43,4 @@ namespace RoguelikeCardFramework.Core
         public int pendingCardRemovals;
     }
 }
+

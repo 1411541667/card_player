@@ -82,6 +82,11 @@ namespace RoguelikeCardFramework.Core
             var label = node.handlerId switch { "core.combat" => "战斗", "core.elite" => "精英战", "core.boss" => "首领战", "core.shop" => "商店", "core.event" => "事件", "core.reward" => "奖励", "core.rest" => "休整", _ => node.handlerId };
             return $"第 {node.layer + 1} 行 · 路线 {node.column + 1} · {label}";
         }
+        public void SetMapInk(System.Collections.Generic.IEnumerable<NativeMapInk> cells)
+        {
+            RequirePhase(NativePhase.Map);
+            map.ink = cells.Take(6000).Select(c => new NativeMapInk { x = c.x, y = c.y, color = c.color }).ToList();
+        }
         private void EnterRouteNode(string id)
         {
             var node = map.nodes.Find(n => n.id == id);
@@ -106,3 +111,4 @@ namespace RoguelikeCardFramework.Core
         }
     }
 }
+
