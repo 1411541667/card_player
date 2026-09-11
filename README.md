@@ -55,23 +55,70 @@ The main menu includes settings, encounter-unlocked encyclopedia entries, and th
 records. Use the backtick key or the **开发面板** button to inspect state, set fixture resources, jump to
 nodes, view domain events, and import or export a `RunSaveV2` document.
 
-## Architecture
+## 技术栈
 
-- `src/game`: deterministic simulation, commands, events, content validation, RNG, node/effect registries, and saves.
-- `src/phaser`: disposable rendering objects and the simulation-to-scene bridge.
-- `src/ui`: Preact DOM overlays, input feedback, responsive layout, and debug tooling.
-- `src/content/wasteland/data`: generated/validated JSON definitions loaded by the game.
-- `src/content/wasteland/tables`: human-editable CSV sources for cards, characters, enemies, bosses, events, rewards, and collectibles.
-- `scripts/sync-content.mjs`: synchronizes editable CSV values into runtime JSON and detects drift.
-- `unity/Assets/Scripts/Core`: Unity 原生规则层，包含命名空间随机数、路线生成、内容数据库、战斗、奖励和原生存档。
-- `unity/Assets/Scripts/Presentation`: 运行时 Canvas/uGUI 展示层，包含各页面、战斗界面、可拖拽/标记地图和自绘 UI 图形。
-- `unity/Assets/Tests/EditMode`: 固定 seed 的网页/Unity 路线、战斗、奖励和随机数一致性测试。
-- `unity/Assets/StreamingAssets`: Unity 运行时内容、菜单媒体和 PNG 图标；规则数据与网页端内容包保持同步。
-- `scripts/sync-unity-ui-assets.mjs`: 将网页 SVG 图标转换为 Unity PNG，并同步菜单图片、视频及源文件哈希。
+| 范围 | 采用技术 | 职责 |
+| --- | --- | --- |
+| 网页运行时 | TypeScript、Vite、Phaser 3、Preact | Vite 提供开发与构建；Phaser 绘制路线和战斗场景；Preact 承担菜单、卡牌、面板与调试界面。 |
+| 网页规则与数据 | TypeScript、Zod、JSON、CSV | 可序列化的确定性规则核心、内容校验及配置驱动的角色、卡牌、敌人、事件、奖励与收藏品。 |
+| 网页测试 | Vitest、Playwright、ESLint | 单元测试、浏览器端到端测试与静态检查。 |
+| 原生客户端 | Unity 2022.3.62f3c1 LTS、C#、uGUI/Canvas、VideoPlayer | Windows x64 原生运行时；运行时生成的 Canvas/uGUI 页面、路线导航、战斗界面及菜单视频背景。 |
+| 原生构建与测试 | IL2CPP、Unity Test Framework、PowerShell、Inno Setup 7 | Windows 安装包、EditMode 测试、smoke test 和安装程序生成。 |
+| 资源处理 | Node.js、Sharp | 将网页 SVG 图标转换为 Unity PNG，同步菜单图片/视频并记录源文件哈希。 |
 
-The UI sends `GameCommand` objects to `GameKernel`. The kernel validates and applies each command
-atomically, emits `DomainEvent` records, and publishes a cloned `GameSnapshot`. Rendering code never
-owns or mutates simulation state.
+## 架构
+
+### 网页端：规则、渲染与界面分离
+
+`GameKernel` 是网页端的唯一规则入口。UI 只发送 `GameCommand`；核心进行校验并原子化地应用变化，记录 `DomainEvent`，随后发布克隆的 `GameSnapshot`。Phaser 与 Preact 只消费快照，不直接修改游戏状态。
+
+```text
+Preact UI / Phaser 场景
+          │ GameCommand
+          ▼
+GameKernel ──► ContentRegistry + Effect / Node 注册表 + 命名空间 RNG
+          │
+          ├──► DomainEvent 日志
+          ├──► GameSnapshot（渲染）
+          └──► RunSaveV2（保存 / 恢复）
+```
+
+- `src/game`：确定性模拟、命令、事件、内容校验、随机数、节点/效果注册及保存。
+- `src/phaser`：一次性渲染对象与规则快照到场景的桥接。
+- `src/ui`：Preact DOM 覆盖层、响应式布局、输入反馈与开发工具。
+- `src/content/wasteland/data`：游戏加载的 JSON 运行时定义。
+- `src/content/wasteland/tables`：供策划编辑的 CSV 源；`scripts/sync-content.mjs` 将其同步到 JSON 并检测漂移。
+
+### Unity 原生端：规则会话与 Presentation 层分离
+
+Unity 客户端的 `Bootstrap` 只负责加载内容、存档与初始化。`NativeGameSession` 及其分部文件管理开局、路线、战斗、奖励、命名空间随机数和 `NativeRunSave`；`Presentation` 层使用 Canvas/uGUI 将会话状态显示为菜单、地图、战斗和奖励页面。表现层通过会话 API 发起操作，不拥有规则状态。
+
+```text
+Bootstrap（加载内容 / 存档）
+          │
+          ├──► NativeGameSession（路线 / 战斗 / 奖励 / 存档 / RNG）
+          │             │
+          │             └──► StreamingAssets 内容 JSON
+          │
+          └──► NativeGameView（Canvas/uGUI、地图拖拽/标记、菜单媒体）
+```
+
+- `unity/Assets/Scripts/Core`：原生规则会话、内容数据库、路线、战斗、奖励、随机数和原生存档。
+- `unity/Assets/Scripts/Presentation`：运行时 Canvas/uGUI 页面、战斗界面、可拖拽/标记地图和自绘 UI 图形。
+- `unity/Assets/StreamingAssets`：内容 JSON、菜单媒体与 PNG 图标。
+- `unity/Assets/Tests/EditMode`：固定 seed 的网页/Unity 路线、战斗、奖励和随机数一致性测试。
+
+### 内容与一致性验证链路
+
+```text
+CSV 配置 ──sync-content──► 网页 JSON ──同步──► Unity StreamingAssets JSON
+                                      │
+真实 TypeScript GameKernel ──export-unity-parity──► 固定 seed 参考夹具
+                                      │
+                                      └── Unity EditMode 测试进行字段级投影比对
+```
+
+当网页规则有意调整时，运行 `node scripts/export-unity-parity.mjs` 更新 Unity 参考夹具；常规验证使用 `--check`，避免用刷新夹具掩盖两端行为差异。`scripts/sync-unity-ui-assets.mjs` 则负责网页视觉资源到 Unity 资源的同步。
 
 See [docs/wasteland-v1.md](docs/wasteland-v1.md) for the implemented design and
 [docs/content-authoring.md](docs/content-authoring.md) for extension instructions.
