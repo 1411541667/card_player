@@ -156,6 +156,23 @@ namespace RoguelikeCardFramework.Core
         }
         public void BuyHeal() { RequirePhase(NativePhase.Shop); if (Gold < 100) { Message = "代币不足"; return; } Gold -= 100; Health = Math.Min(MaxHealth, Health + Mathf.CeilToInt(MaxHealth * .3f)); Message = "伤势得到处理"; revision++; }
         public void BuyCard() { RequirePhase(NativePhase.Shop); if (Gold < 50) { Message = "代币不足"; return; } Gold -= 50; AddCard("card.throw-rock"); Message = "购买了投掷石头"; revision++; }
+        public void RemoveCard(string cardInstanceId)
+        {
+            RequirePhase(NativePhase.Shop);
+            if (Gold < 100) throw new InvalidOperationException("代币不足。");
+            if (deck.Count <= content.minimumDeckSize) throw new InvalidOperationException("牌组不能再减少。");
+            if (!deck.Remove(cardInstanceId)) throw new ArgumentException("卡牌不在当前牌组中。");
+            instances.RemoveAll(card => card.instanceId == cardInstanceId); Gold -= 100; Message = "已从牌组移除卡牌"; revision++;
+        }
+        public void UpgradeCard(string cardInstanceId)
+        {
+            RequirePhase(NativePhase.Shop);
+            if (Gold < 50) throw new InvalidOperationException("代币不足。");
+            var instance = instances.Find(card => card.instanceId == cardInstanceId);
+            if (instance == null || !deck.Contains(cardInstanceId)) throw new ArgumentException("卡牌不在当前牌组中。");
+            if (instance.upgradeLevel >= content.cards[instance.definitionId].upgrades.Count) throw new InvalidOperationException("这张牌已经强化至最高等级。");
+            instance.upgradeLevel++; Gold -= 50; Message = "已强化卡牌"; revision++;
+        }
         public void LeaveShop() { RequirePhase(NativePhase.Shop); Phase = setupShop ? NativePhase.ThemeSelect : NativePhase.Map; setupShop = false; Message = "离开商店"; revision++; }
         public void ResolveEvent(int option)
         {
@@ -165,11 +182,20 @@ namespace RoguelikeCardFramework.Core
             Phase = NativePhase.Map;
             revision++;
         }
-        public void Rest(bool heal)
+        public void Rest(bool heal) => Rest(heal, null);
+        public void Rest(bool heal, string cardInstanceId)
         {
             RequirePhase(NativePhase.Rest);
             if (heal) { Health = Math.Min(MaxHealth, Health + Mathf.CeilToInt(MaxHealth * .3f)); Message = "休息后恢复了生命"; }
-            else { Gold += 25; Message = "整理装备并发现 25 代币"; }
+            else
+            {
+                if (string.IsNullOrEmpty(cardInstanceId)) throw new ArgumentException("升级卡牌需要选择一张牌。");
+                var instance = instances.Find(c => c.instanceId == cardInstanceId);
+                if (instance == null || !deck.Contains(cardInstanceId)) throw new ArgumentException("卡牌不在当前牌组中。");
+                var definition = content.cards[instance.definitionId];
+                if (instance.upgradeLevel >= definition.upgrades.Count) throw new InvalidOperationException("这张牌已经强化至最高等级。");
+                instance.upgradeLevel++; Message = $"{CardFor(cardInstanceId).name} 得到强化";
+            }
             Phase = NativePhase.Map;
             revision++;
         }

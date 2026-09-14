@@ -113,9 +113,35 @@ namespace RoguelikeCardFramework.Presentation
             if(n==0)n=3;var w=(p.rect.width-60-(n-1)*12)/n;
             for(var i=0;i<n;i++){var index=i;var text=game.RewardIds.Count>0?game.RewardLabel(game.RewardIds[i]):new[]{"150 代币","恢复 30% 生命","获得随机卡牌"}[i];Choice(p,"奖励 "+(i+1),text,30+i*(w+12),116,w,230,()=>Run(()=>game.ChooseReward(index)));}
         }
-        private void Shop(){var p=Sheet("SHOP // 废墟商店","风沙中的交易",410);Choice(p,"补给治疗","恢复 30% 生命\n\n100 代币",30,116,360,210,()=>Run(game.BuyHeal));Choice(p,"投掷石头","将卡牌加入卡包\n\n50 代币",406,116,384,210,()=>Run(game.BuyCard));Button(p,"离开商店",p.rect.width-210,350,180,40,()=>Run(game.LeaveShop));}
+        private void Shop()
+        {
+            var p=Sheet("SHOP // 废墟商店","风沙中的交易",410);
+            Choice(p,"补给治疗","恢复 30% 生命\n\n100 代币",30,116,360,210,()=>Run(game.BuyHeal));
+            Choice(p,"投掷石头","将卡牌加入卡包\n\n50 代币",406,116,384,210,()=>Run(game.BuyCard));
+            Button(p,"移除卡牌 · 100",30,342,190,42,()=>Open("shop-remove"));
+            Button(p,"强化卡牌 · 50",232,342,190,42,()=>Open("shop-upgrade"));
+            Button(p,"离开商店",p.rect.width-210,342,180,42,()=>Run(game.LeaveShop));
+            if(modal=="shop-remove") ModalCardChoice("选择要移除的卡牌", id=>Run(()=>game.RemoveCard(id)));
+            if(modal=="shop-upgrade") ModalCardChoice("选择要强化的卡牌", id=>Run(()=>game.UpgradeCard(id)));
+        }
         private void Event(){var p=Sheet("EVENT // 风沙异闻","废墟里的余火",380);Choice(p,"靠近余火","恢复 10 生命",30,116,368,224,()=>Run(()=>game.ResolveEvent(0)));Choice(p,"冒险搜索","失去 8 生命，获得 60 代币",414,116,376,224,()=>Run(()=>game.ResolveEvent(1)));}
-        private void Rest(){var p=Sheet("REST // 休整","停下脚步",380);Choice(p,"休息","恢复 30% 生命",30,116,368,224,()=>Run(()=>game.Rest(true)));Choice(p,"整理装备","获得 25 代币",414,116,376,224,()=>Run(()=>game.Rest(false)));}
+        private void Rest()
+        {
+            var p=Sheet("REST // 休整","停下脚步",380);
+            Choice(p,"休息","恢复 30% 最大生命值",30,116,368,224,()=>Run(()=>game.Rest(true)));
+            Choice(p,"升级卡牌","选择一张尚未达到强化上限的卡牌",414,116,376,224,()=>Open("rest-upgrade"));
+            if(modal=="rest-upgrade") ModalCardChoice("选择要强化的卡牌", id=>Run(()=>game.Rest(false,id)));
+        }
+
+        private void ModalCardChoice(string title, Action<string> choose)
+        {
+            var overlay=Panel(page,"Modal backdrop",0,0,W,H,Hex("000000",.72f),0);var saved=page;page=overlay;
+            var p=Sheet("REST // 卡牌选择",title,Mathf.Min(560,H-110),960);
+            Button(p,"关闭",p.rect.width-106,20,82,38,()=>Open(null));
+            var body=ScrollArea(p,24,115,p.rect.width-48,p.rect.height-137,Mathf.Ceil(game.Deck.Count/6f)*230);
+            for(var i=0;i<game.Deck.Count;i++){var id=game.Deck[i];var card=game.CardFor(id);if(card.upgrades.Count>0)Card(body,card,10+i%6*148,i/6*230,128,214,()=>{Open(null);choose(id);});}
+            page=saved;
+        }
         private void Result(){var p=Sheet("RESULT // 旅程结束","风沙记得你的足迹",380);Label(p,game.Message+$"\n\n最终分数  {game.Score}     获得局外代币  {game.Score/100}",30,125,760,140,20);Button(p,"返回主菜单",30,290,300,54,()=>Run(finish),true);}
     }
 }

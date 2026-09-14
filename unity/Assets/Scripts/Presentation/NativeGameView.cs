@@ -148,7 +148,7 @@ namespace RoguelikeCardFramework.Presentation
             }
             if (game.HasRun && game.Phase != NativePhase.Menu && game.Phase != NativePhase.CharacterSelect && game.Phase != NativePhase.BoonSelect && game.Phase != NativePhase.BoonRemove && game.Phase != NativePhase.ThemeSelect) Hud();
             else if (!menu) Button(page, "设置", W - 110, 18, 92, 38, () => Open("pause"));
-            if (modal != null) Modal();
+            if (modal != null && modal != "rest-upgrade" && modal != "shop-remove" && modal != "shop-upgrade") Modal();
             if (!string.IsNullOrEmpty(error))
             {
                 var banner = Panel(page, "Error", (W - 650) / 2, 82, 650, 48, Danger, 8);
