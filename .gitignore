@@ -8,3 +8,9 @@ test-results/
 *.log
 *.tsbuildinfo
 release/
+launcher/bin/
+launcher/obj/
+launcher/checks/bin/
+launcher/checks/obj/
+GameLauncher.exe
+node.exe

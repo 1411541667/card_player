@@ -21,6 +21,17 @@ try {
   if ($LASTEXITCODE -ne 0) { throw 'dotnet publish failed' }
   Copy-Item -Recurse -Force dist (Join-Path $stage 'dist')
   Copy-Item -Force launcher\launcher.ico (Join-Path $stage 'launcher.ico')
+  $requiredFiles = @(
+    (Join-Path $stage 'GameLauncher.exe'),
+    (Join-Path $stage 'dist\index.html')
+  )
+  foreach ($requiredFile in $requiredFiles) {
+    if (-not (Test-Path -LiteralPath $requiredFile -PathType Leaf)) { throw "Required package file is missing: $requiredFile" }
+  }
+  $assetDirectory = Join-Path $stage 'dist\assets'
+  if (-not (Test-Path -LiteralPath $assetDirectory -PathType Container)) { throw "Required package directory is missing: $assetDirectory" }
+  if (-not (Get-ChildItem -LiteralPath $assetDirectory -File | Select-Object -First 1)) { throw "Packaged asset directory is empty: $assetDirectory" }
+  Write-Host "Validated desktop staging directory: $stage"
   $iscc = Get-Command iscc.exe -ErrorAction SilentlyContinue
   if (-not $iscc) { Write-Warning "Inno Setup not found. Runnable staging directory: $stage"; exit 0 }
   $output = Join-Path $root 'release'

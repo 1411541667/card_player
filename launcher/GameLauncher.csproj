@@ -10,9 +10,21 @@
     <InvariantGlobalization>true</InvariantGlobalization>
     <AssemblyName>GameLauncher</AssemblyName>
     <RootNamespace>GameLauncher</RootNamespace>
+    <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <ApplicationIcon>launcher.ico</ApplicationIcon>
     <Version Condition="'$(Version)' == ''">0.1.0</Version>
   </PropertyGroup>
-  <ItemGroup><PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2903.40" /></ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2903.40" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="checks\**\*.cs" />
+    <None Include="checks\**\*" />
+  </ItemGroup>
+  <Target Name="RemoveUnusedWebView2WpfReference" BeforeTargets="ResolveAssemblyReferences">
+    <ItemGroup>
+      <Reference Remove="@(Reference)" Condition="'%(Reference.Filename)' == 'Microsoft.Web.WebView2.Wpf'" />
+    </ItemGroup>
+  </Target>
 </Project>

@@ -14,7 +14,6 @@
     "content:sync": "node scripts/sync-content.mjs",
     "content:check": "node scripts/sync-content.mjs --check",
     "check:no-unity": "node scripts/check-no-unity.mjs",
-    "package:portable": "powershell -ExecutionPolicy Bypass -File scripts/package-portable.ps1",
     "package:windows": "powershell -ExecutionPolicy Bypass -File scripts/package-windows.ps1"
   },
   "dependencies": {
