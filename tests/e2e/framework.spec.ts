@@ -17,11 +17,19 @@ async function startRun(page: Page, testInfo?: TestInfo): Promise<void> {
   await expect(page.getByTestId('map-panel')).toBeVisible();
 }
 
+async function enterAvailableMapNode(page: Page): Promise<void> {
+  const canvas = page.locator('#game-root canvas');
+  const box = await canvas.boundingBox();
+  if (!box) throw new Error('Game canvas has no visible bounds.');
+  const mapHeight = Math.min(900, Math.round(box.height * 0.72));
+  await canvas.click({ position: { x: Math.max(96, Math.round(box.width / 6)), y: Math.round((box.height + mapHeight) / 2) }, force: true });
+}
+
 test('boots, completes setup, and enters a node', async ({ page }, testInfo) => {
   await startRun(page, testInfo);
   await page.screenshot({ path: testInfo.outputPath('map.png'), fullPage: true });
-  await page.locator('.node-list button').first().click();
-  await expect(page.locator('[data-testid="combat"], [data-testid="shop"], [data-testid="event"], [data-testid="reward"]')).toBeVisible();
+  await enterAvailableMapNode(page);
+  await expect(page.locator('[data-testid="combat"], [data-testid="shop"], [data-testid="event"], [data-testid="reward"], [data-testid="rest"]')).toBeVisible();
   await page.screenshot({ path: testInfo.outputPath('node.png'), fullPage: true });
   await expect(page.locator('.error-banner')).toHaveCount(0);
 });
@@ -67,7 +75,10 @@ test('shop and event handlers expose their authored content', async ({ page }) =
   await page.locator('.debug-node-grid button').filter({ hasText: 'core.shop' }).first().click();
   await page.getByTestId('debug-panel').getByRole('button', { name: '关闭' }).click();
   await expect(page.getByTestId('shop')).toBeVisible();
-  await expect(page.locator('.shop-offer')).toHaveCount(7);
+  const shopSections = page.getByTestId('shop').locator('.shop-grid');
+  await expect(shopSections.nth(0).locator('.shop-offer')).toHaveCount(5);
+  await expect(shopSections.nth(1).locator('.shop-offer')).toHaveCount(2);
+  await expect(shopSections.nth(2).locator('.shop-offer')).toHaveCount(3);
 
   await page.getByRole('button', { name: '开发面板' }).click();
   await page.getByText('启动事件').click();

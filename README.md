@@ -2,7 +2,7 @@
 
 一款末日废土题材的 Roguelike 卡牌构筑游戏。玩家选择角色和祝福，组建卡组，在四层地图中探索战斗，处理事件、商店和休整节点，收集卡牌与收藏品，挑战每层首领。
 
-项目同时提供网页版本和 Unity 原生 Windows 版本。
+同一套 Web 游戏可在浏览器中运行，也可以封装成离线 Windows 桌面软件。
 
 ## 游戏内容
 
@@ -10,80 +10,75 @@
 - 流程：角色选择 → 祝福/删牌 → 主题选择 → 四层地图 → 首领战
 - 玩法：卡牌战斗、敌人意图、护盾与状态效果、奖励、商店、事件、休整和存档
 - 内容：卡牌、敌人、首领、收藏品、祝福、地图节点和本地化文本
-- Unity 版支持可拖拽路线图、地图标记、战斗界面、菜单视频背景及原生存档
 
 ## 技术栈
 
 - 网页：TypeScript、Vite、Phaser 3、Preact
 - 规则核心：TypeScript `GameKernel`、Zod、确定性随机数
 - 内容数据：CSV（编辑源）与 JSON（运行时）
-- 原生客户端：Unity 2022.3.62f3c1 LTS、C#、uGUI/Canvas、VideoPlayer
-- Windows 发布：IL2CPP、PowerShell、Inno Setup 7
-- 测试：Vitest、Playwright、Unity Test Framework/EditMode
+- Windows 桌面：.NET 8 WinForms、Microsoft Edge WebView2
+- Windows 发布：PowerShell、Inno Setup
+- 测试与 CI：Vitest、Playwright、CircleCI
 
-## 开启网页版本
+## 运行网页版本
 
-需要 Node.js（建议 18+）：
+需要 Node.js 22：
 
 ```bash
 npm install
 npm run dev
 ```
 
-然后打开终端显示的本地地址（通常是 `http://localhost:5173`）。
+打开终端显示的地址，默认是 `http://127.0.0.1:4173`。
 
-常用命令：
+常用检查：
 
 ```bash
-npm run build    # 构建网页版本
-npm test         # 运行网页单元测试
-npm run lint     # 代码检查
+npm run content:check
+npm test
+npm run lint
+npm run build
 ```
 
-## 开启 Unity 原生版本
+生产网页输出到 `dist/`。
 
-需要安装 Unity `2022.3.62f3c1`，并勾选 Windows Build Support / IL2CPP。
+## 生成 Windows 桌面版
 
-1. 用 Unity Hub 打开仓库中的 `unity/` 文件夹。
-2. 打开场景 `unity/Assets/Scenes/Bootstrap.unity`。
-3. 点击 Unity 编辑器的 Play 按钮开始游戏。
-
-Unity 菜单 `Build > Windows x64` 可生成 Windows 版本。修改根目录 `package.json` 的版本号后，也可以执行：
+需要 Node.js 22 和 .NET 8 SDK。生成安装包还需要 Inno Setup；没有 Inno Setup 时仍会生成可直接运行的目录。
 
 ```powershell
-npm run package:unity:windows
+npm install
+npm run package:windows
 ```
 
-安装包输出到 `release/异变独行-{version}-Setup.exe`。快速界面预览可使用 Unity 菜单 `Build > UI Preview Windows`。
+输出位置：
 
-## 内容与测试
+- 可运行目录：`release/stage-{version}/`
+- 主程序：`release/stage-{version}/GameLauncher.exe`
+- 安装包：`release/Roguelike-Card-Framework-{version}-Setup.exe`
 
-策划数据位于 `src/content/wasteland/tables`，同步到 JSON：
+桌面版使用 WebView2 加载同一份 `dist/`，不维护第二套游戏规则。接收安装包的用户不需要安装 Node.js 或 .NET，但 Windows 需要 Microsoft Edge WebView2 Runtime。
+
+## 内容维护
+
+策划表位于 `src/content/wasteland/tables`。修改后同步并检查运行时 JSON：
 
 ```bash
 npm run content:sync
 npm run content:check
 ```
 
-检查网页与 Unity 的固定 seed 参考数据：
+## CircleCI
 
-```bash
-node scripts/export-unity-parity.mjs --check
-```
-
-Unity EditMode 验收（运行前请关闭 Unity 编辑器）：
-
-```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\test-unity.ps1
-```
-
-详细迁移进度和手动验收步骤见 [docs/unity-migration-plan.md](docs/unity-migration-plan.md) 与 [docs/unity-testing.md](docs/unity-testing.md)。
+- 普通分支和 Pull Request：检查内容同步、运行单元测试和 ESLint，并构建网页产物。
+- `v*` 版本标签：网页检查通过后，额外使用 Windows executor 生成桌面发布包。
+- 构建结果可从 CircleCI artifacts 下载。
 
 ## 目录概览
 
-- `src/game`：网页规则核心
-- `src/ui`、`src/phaser`：网页界面与场景渲染
-- `src/content/wasteland`：游戏内容数据和资源
-- `unity/Assets/Scripts/Core`：Unity 原生规则
-- `unity/Assets/Scripts/Presentation`：Unity uGUI 界面
-- `tests`、`unity/Assets/Tests`：网页与 Unity 测试
+- `src/game`：游戏规则核心
+- `src/ui`、`src/phaser`：界面与场景渲染
+- `src/content/wasteland`：内容数据和资源
+- `launcher`：WebView2 Windows 桌面外壳
+- `installer`：Windows 安装器配置
+- `tests`：网页单元测试和端到端测试

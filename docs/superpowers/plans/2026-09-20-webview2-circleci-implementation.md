@@ -42,7 +42,7 @@
 - Consumes: existing npm scripts `content:check`, `test`, `lint`, and `build`
 - Produces: npm script `check:no-unity`, which exits zero only when active Unity paths and package scripts are absent
 
-- [ ] **Step 1: Record the pre-change Web baseline**
+- [x] **Step 1: Record the pre-change Web baseline**
 
 Run:
 
@@ -55,7 +55,7 @@ npm run build
 
 Expected: every command exits `0`; record existing failures before deleting anything.
 
-- [ ] **Step 2: Add a repository-boundary check that initially fails**
+- [x] **Step 2: Add a repository-boundary check that initially fails**
 
 Create `scripts/check-no-unity.mjs`:
 
@@ -95,19 +95,19 @@ console.log('No active Unity project or tooling remains.');
 
 Add `"check:no-unity": "node scripts/check-no-unity.mjs"` to `package.json`.
 
-- [ ] **Step 3: Run the boundary check and verify the red state**
+- [x] **Step 3: Run the boundary check and verify the red state**
 
 Run: `npm run check:no-unity`
 
 Expected: FAIL and list `unity` plus the Unity-only scripts and documents.
 
-- [ ] **Step 4: Delete the resolved Unity targets safely**
+- [x] **Step 4: Delete the resolved Unity targets safely**
 
 Delete only the paths listed in this task. Resolve `D:\lz\lz\project\rougulike\unity` before recursively removing it and verify that the resolved path is exactly beneath `D:\lz\lz\project\rougulike`. Remove Unity-only generated reports from `test-results/`; do not remove Web or Playwright results.
 
 Remove `package:unity:windows` from `package.json`. Remove only `unity/...` patterns from `.gitignore`.
 
-- [ ] **Step 5: Verify the green state and Web regression boundary**
+- [x] **Step 5: Verify the green state and Web regression boundary**
 
 Run:
 
@@ -122,7 +122,7 @@ rg -n -i --glob '!docs/superpowers/**' --glob '!node_modules/**' --glob '!dist/*
 
 Expected: the boundary check and all Web commands pass; `rg` prints no active references.
 
-- [ ] **Step 6: Commit the Unity removal**
+- [x] **Step 6: Commit the Unity removal**
 
 ```powershell
 git add -A unity docs/unity-migration-plan.md docs/unity-testing.md scripts installer/roguelike-unity.iss package.json .gitignore
@@ -156,7 +156,7 @@ git commit -m "refactor: remove Unity implementation"
 - Produces: desktop origin `https://app.local/` backed by the packaged `dist/` directory
 - Produces: npm script `package:windows` as the sole Windows packaging entrypoint
 
-- [ ] **Step 1: Write the failing navigation-policy checks**
+- [x] **Step 1: Write the failing navigation-policy checks**
 
 Create `launcher/checks/LauncherChecks.csproj`:
 
@@ -194,13 +194,13 @@ foreach (var (uri, expected) in cases)
 Console.WriteLine("Launcher navigation checks passed.");
 ```
 
-- [ ] **Step 2: Run the checks and verify they fail**
+- [x] **Step 2: Run the checks and verify they fail**
 
 Run: `dotnet run --project launcher/checks/LauncherChecks.csproj`
 
 Expected: FAIL because `launcher/NavigationPolicy.cs` does not exist.
 
-- [ ] **Step 3: Implement the navigation policy**
+- [x] **Step 3: Implement the navigation policy**
 
 Create `launcher/NavigationPolicy.cs`:
 
@@ -228,7 +228,7 @@ Exclude `checks/**/*.cs` from the launcher compilation in `GameLauncher.csproj`:
 </ItemGroup>
 ```
 
-- [ ] **Step 4: Run policy and launcher compilation checks**
+- [x] **Step 4: Run policy and launcher compilation checks**
 
 Run:
 
@@ -239,7 +239,7 @@ dotnet build launcher/GameLauncher.csproj -c Release
 
 Expected: both commands exit `0`.
 
-- [ ] **Step 5: Remove the obsolete Node/GCC carrier and tracked build products**
+- [x] **Step 5: Remove the obsolete Node/GCC carrier and tracked build products**
 
 Remove the legacy paths listed in this task. Add these rules to `.gitignore`:
 
@@ -254,17 +254,17 @@ node.exe
 
 Remove `package:portable` from `package.json`. Keep `package:windows`.
 
-- [ ] **Step 6: Make packaging verify the produced staging layout**
+- [x] **Step 6: Make packaging verify the produced staging layout**
 
 After copying `dist` in `scripts/package-windows.ps1`, add checks that `GameLauncher.exe`, `dist/index.html`, and at least one `dist/assets/*` file exist. Throw a path-specific error when a required output is missing. Keep the current test, lint, build, self-contained publish, and optional Inno Setup behavior.
 
-- [ ] **Step 7: Build the Web and Windows staging directory**
+- [x] **Step 7: Build the Web and Windows staging directory**
 
 Run: `npm run package:windows`
 
 Expected: Web checks pass and `release/stage-<package version>/GameLauncher.exe` plus `dist/index.html` exist. If Inno Setup is unavailable, the script must exit successfully after warning and leave the runnable staging directory.
 
-- [ ] **Step 8: Commit the desktop carrier**
+- [x] **Step 8: Commit the desktop carrier**
 
 ```powershell
 git add -A launcher scripts/package-portable.ps1 scripts/package-windows.ps1 server.cjs node.exe GameLauncher.exe package.json .gitignore
@@ -282,7 +282,7 @@ git commit -m "feat: make WebView2 the Windows game carrier"
 - Produces: CircleCI job `windows-package`, triggered only by tags matching `v*`
 - Consumes: npm scripts `check:no-unity`, `content:check`, `test`, `lint`, `build`, and `package:windows`
 
-- [ ] **Step 1: Create the CircleCI configuration**
+- [x] **Step 1: Create the CircleCI configuration**
 
 Create `.circleci/config.yml`:
 
@@ -358,11 +358,11 @@ workflows:
               only: /^v.*/
 ```
 
-- [ ] **Step 2: Remove the duplicate GitHub Actions release workflow**
+- [x] **Step 2: Remove the duplicate GitHub Actions release workflow**
 
 Delete `.github/workflows/windows-release.yml`. Leave `.github/` in place if other files exist.
 
-- [ ] **Step 3: Validate the configuration locally**
+- [x] **Step 3: Validate the configuration locally**
 
 Run:
 
@@ -372,7 +372,7 @@ circleci config validate .circleci/config.yml
 
 Expected: `Config file at .circleci/config.yml is valid.` If the CircleCI CLI is unavailable, parse the YAML with an available local parser and explicitly record that authoritative remote validation remains pending.
 
-- [ ] **Step 4: Re-run the commands represented by CircleCI**
+- [x] **Step 4: Re-run the commands represented by CircleCI**
 
 Run:
 
@@ -388,7 +388,7 @@ dotnet run --project launcher/checks/LauncherChecks.csproj
 
 Expected: every command exits `0`.
 
-- [ ] **Step 5: Commit CircleCI**
+- [x] **Step 5: Commit CircleCI**
 
 ```powershell
 git add .circleci/config.yml .github/workflows/windows-release.yml
@@ -405,7 +405,7 @@ git commit -m "ci: add CircleCI web and Windows pipelines"
 - Consumes: the final npm, desktop, and CircleCI commands
 - Produces: player/developer instructions that describe only the Web and WebView2 deliverables
 
-- [ ] **Step 1: Rewrite README delivery instructions**
+- [x] **Step 1: Rewrite README delivery instructions**
 
 Keep the concise game overview and gameplay content. Replace Unity sections with:
 
@@ -416,7 +416,7 @@ Keep the concise game overview and gameplay content. Replace Unity sections with
 - architecture statement that browser and Windows use the same Web game implementation
 - CircleCI behavior for branches and `v*` tags
 
-- [ ] **Step 2: Perform complete automated acceptance**
+- [x] **Step 2: Perform complete automated acceptance**
 
 Run:
 
@@ -438,7 +438,7 @@ Expected: all commands pass and `release/final-verification/GameLauncher.exe` ex
 
 Copy `dist/` to `release/final-verification/dist`, launch `release/final-verification/GameLauncher.exe`, verify the main menu appears, and close only the process started by this task. If GUI launch permission is unavailable, report desktop rendering as unverified rather than inferring success from compilation.
 
-- [ ] **Step 4: Confirm cleanup boundaries**
+- [x] **Step 4: Confirm cleanup boundaries**
 
 Run:
 
@@ -449,7 +449,7 @@ git status --short --ignored
 
 Expected: no active Unity references; ignored output is limited to expected dependency, build, test, and release directories.
 
-- [ ] **Step 5: Record completed checkboxes and commit documentation**
+- [x] **Step 5: Record completed checkboxes and commit documentation**
 
 Mark executed plan steps complete only where evidence exists, then run:
 

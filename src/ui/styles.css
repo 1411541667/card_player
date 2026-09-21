@@ -294,6 +294,14 @@ html[data-reduced-motion="true"] *, html[data-reduced-motion="true"] *::before, 
   .binding-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
+@media (orientation: landscape) and (max-height: 600px) {
+  .game-title { top: 12px; left: 16px; font-size: clamp(2.2rem, 11vh, 3.2rem); }
+  .menu-panel { top: 72px; right: auto; bottom: 10px; left: 16px; width: min(760px, calc(100vw - 32px)); overflow-y: auto; }
+  .menu-actions { grid-template-columns: repeat(2, minmax(180px, 1fr)); gap: 8px; margin-top: 8px; }
+  .menu-actions button { min-height: 44px; padding: 0.65rem 1rem; }
+  .menu-meta { margin-top: 8px; }
+}
+
 @media (orientation: portrait) and (max-width: 700px) {
   .ui-shell::after { content: "建议旋转至横屏以运行测试界面"; position: absolute; z-index: 90; inset: 0; display: grid; place-items: center; padding: 24px; text-align: center; background: #0d1118; color: var(--text); pointer-events: auto; }
 }
