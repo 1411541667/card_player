@@ -14,6 +14,7 @@
     "content:sync": "node scripts/sync-content.mjs",
     "content:check": "node scripts/sync-content.mjs --check",
     "check:no-unity": "node scripts/check-no-unity.mjs",
+    "icon:build": "node scripts/render-launcher-icon.mjs && powershell -ExecutionPolicy Bypass -File scripts/make-launcher-icon.ps1",
     "package:windows": "powershell -ExecutionPolicy Bypass -File scripts/package-windows.ps1"
   },
   "dependencies": {

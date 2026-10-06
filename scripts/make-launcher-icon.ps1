@@ -2,7 +2,7 @@ $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.Drawing
 
 $root = Split-Path -Parent $PSScriptRoot
-$sourcePath = Join-Path $root 'src\appimpage.jpg'
+$sourcePath = Join-Path $root 'src\launcher-icon.png'
 $iconPath = Join-Path $root 'launcher\launcher.ico'
 $temp = Join-Path ([System.IO.Path]::GetTempPath()) ("launcher-icon-" + [guid]::NewGuid().ToString())
 New-Item -ItemType Directory -Path $temp | Out-Null
@@ -29,7 +29,11 @@ try {
   }
   $source.Dispose()
 
-  $streams = $pngs | ForEach-Object { [System.IO.File]::ReadAllBytes($_) }
+  # Read each frame into a strongly typed list. A bare `$pngs | ForEach-Object { ... }`
+  # would enumerate each byte[] into individual bytes, making every directory entry
+  # report a length of 1 and corrupting the ICO entry table.
+  $streams = [System.Collections.Generic.List[byte[]]]::new()
+  foreach ($png in $pngs) { $streams.Add([System.IO.File]::ReadAllBytes($png)) }
   $output = New-Object System.IO.MemoryStream
   $writer = New-Object System.IO.BinaryWriter($output)
   $writer.Write([UInt16]0); $writer.Write([UInt16]1); $writer.Write([UInt16]$sizes.Count)
