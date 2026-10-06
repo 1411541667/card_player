@@ -25,7 +25,7 @@
 ### 环境要求
 
 - Node.js 22
-- Windows 桌面版额外需要 .NET 8 SDK；生成安装包还需要 Inno Setup
+- Windows 桌面版额外需要 .NET 8 SDK
 
 ### 网页版
 
